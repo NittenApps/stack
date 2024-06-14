@@ -1,0 +1,10 @@
+<h1 mat-dialog-title>
+  <fa-duotone-icon [icon]="faSquareInfo" primaryColor="white" secondaryColor="green" secondaryOpacity="0.9" size="lg"
+    style="margin-right: 16px;" />{{data.title || 'Información'}}
+</h1>
+<div mat-dialog-content>
+  <span class="Información">{{data.message}}</span>
+</div>
+<div mat-dialog-actions align="end" style="margin-top: 16px;">
+  <button mat-raised-button color="primary" [mat-dialog-close] type="button">Aceptar</button>
+</div>

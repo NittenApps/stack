@@ -1,0 +1,38 @@
+@use '@angular/material' as mat;
+
+@mixin color($theme) {
+  .mat-toolbar {
+    &.mat-primary[color='primary'] {
+      background-color: mat.get-theme-color($theme, primary);
+      color: mat.get-theme-color($theme, on-primary);
+
+      .mat-mdc-icon-button {
+        color: mat.get-theme-color($theme, on-primary);
+      }
+    }
+
+    &.mat-secondary[color='secondary'] {
+      background-color: mat.get-theme-color($theme, secondary);
+      color: mat.get-theme-color($theme, on-secondary);
+
+      .mat-mdc-icon-button {
+        color: mat.get-theme-color($theme, on-secondary);
+      }
+    }
+
+    &.mat-tertiary[color='tertiary'] {
+      background-color: mat.get-theme-color($theme, tertiary);
+      color: mat.get-theme-color($theme, on-tertiary);
+
+      .mat-mdc-icon-button {
+        color: mat.get-theme-color($theme, on-tertiary);
+      }
+    }
+  }
+}
+
+@mixin theme($theme) {
+  @if mat.theme-has($theme, color) {
+    @include color($theme);
+  }
+}

@@ -1,0 +1,62 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use '@angular/material' as mat;
+@use './styles/theme' as theme;
+@use './app-theme' as demo;
+
+// Plus imports for other components in your app.
+@import './app-layout';
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat.core();
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+html {
+  //@include mat.all-component-themes(theme.$light-theme);
+  @include mat.all-component-themes(theme.$light-theme);
+  @include demo.theme(theme.$light-theme);
+
+  @include mat.typography-hierarchy(theme.$light-theme);
+
+  //@include layout-component.theme(theme.$light-theme);
+
+  //@include mat.color-variants-backwards-compatibility(theme.$light-theme);
+
+  //@include app-theme(theme.$light-theme);
+
+  @media (prefers-color-scheme: dark) {
+    @include mat.all-component-colors(theme.$dark-theme);
+    @include demo.theme(theme.$dark-theme);
+
+    @include mat.typography-hierarchy(theme.$dark-theme);
+
+    // Components themes
+    //@include layout-component.theme(theme.$dark-theme);
+
+    //@include mat.color-variants-backwards-compatibility(theme.$dark-theme);
+
+    //@include app-theme(theme.$dark-theme);
+  }
+}
+
+// Comment out the line below if you want to use the pre-defined typography utility classes.
+// For more information: https://material.angular.io/guide/typography#using-typography-styles-in-your-application.
+// @include mat.typography-hierarchy($theme);
+
+// Comment out the line below if you want to use the deprecated `color` inputs.
+// @include mat.color-variants-backwards-compatibility($theme);
+/* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  display: flex;
+}

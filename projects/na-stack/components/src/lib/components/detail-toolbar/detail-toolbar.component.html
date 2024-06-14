@@ -1,0 +1,13 @@
+<mat-toolbar class="list-toolbar" color="tertiary">
+  <button mat-icon-button matTooltip="Regresar" aria-label="Regresar" (click)="location.back()">
+    <fa-duotone-icon [icon]="faArrowLeft" swapOpacity="true" />
+  </button>
+  @if (allowSave) {
+  <button mat-icon-button matTooltip="Guardar" aria-label="Guardar">
+    <fa-duotone-icon [icon]="faFloppyDisk" swapOpacity="true" />
+  </button>
+  }
+  <ng-container *ngTemplateOutlet="leftActions" />
+  <span class="spacer"></span>
+  <ng-container *ngTemplateOutlet="rightActions" />
+</mat-toolbar>

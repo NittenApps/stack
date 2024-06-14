@@ -2,6 +2,14 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "paths": {
+      "@na-stack/activity": ["./dist/na-stack/activity"],
+      "@na-stack/api": ["./dist/na-stack/api"],
+      "@na-stack/auth": ["./dist/na-stack/auth"],
+      "@na-stack/common": ["./dist/na-stack/common"],
+      "@na-stack/components": ["./dist/na-stack/components"],
+      "auth": ["./dist/auth"]
+    },
     "outDir": "./dist/out-tsc",
     "strict": true,
     "noImplicitOverride": true,
@@ -18,10 +26,7 @@
     "target": "ES2022",
     "module": "ES2022",
     "useDefineForClassFields": false,
-    "lib": [
-      "ES2022",
-      "dom"
-    ]
+    "lib": ["ES2022", "dom"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

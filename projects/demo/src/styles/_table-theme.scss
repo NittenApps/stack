@@ -1,0 +1,18 @@
+@use '@angular/material' as mat;
+
+@mixin color($theme) {
+  .mat-mdc-table.selectable {
+    tbody {
+      tr:hover:not(.selected):not(.mat-mdc-no-data-row) {
+        background-color: mat.get-theme-color($theme, tertiary, 95);
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+@mixin theme($theme) {
+  @if mat.theme-has($theme, color) {
+    @include color($theme);
+  }
+}

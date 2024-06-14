@@ -1,0 +1,13 @@
+<nas-list-toolbar>
+  <ng-template #leftActions>
+    <button mat-icon-button matTooltip="Buscar" aria-label="Buscar">
+      <fa-duotone-icon [icon]="faMagnifyingGlass" [swapOpacity]="true" />
+    </button>
+  </ng-template>
+  <ng-template #rightActions>
+    <button mat-icon-button matTooltip="Ayuda" aria-label="Ayuda">
+      <fa-duotone-icon [icon]="faQuestion" />
+    </button>
+  </ng-template>
+</nas-list-toolbar>
+<nas-list activity="test" [columns]="columns" />

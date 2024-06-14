@@ -1,0 +1,65 @@
+@use '@angular/material' as mat;
+
+@mixin color($theme) {
+  $type: mat.get-theme-type($theme);
+  $is-dark-theme: $type == dark;
+
+  .left-navbar {
+    background-color: if(
+      $is-dark-theme,
+      lighten(mat.get-theme-color($theme, surface), 2.5%),
+      darken(mat.get-theme-color($theme, surface), 1.5%)
+    );
+    box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+      0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+
+    .navbar-header {
+      box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+        0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+
+      .logo-icon {
+        background-image: url('../../public/images/logo.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+      }
+    }
+  }
+
+  nas-navbar-vertical {
+    nas-navbar-navigation > nas-navbar-collapsible.state-active {
+      > a.open {
+        background-color: mat.get-theme-color($theme, secondary-container);
+        color: mat.get-theme-color($theme, on-secondary-container);
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+
+        &:hover {
+          background-color: mat.get-theme-color($theme, secondary-container) !important;
+        }
+      }
+
+      > .children {
+        background-color: mat.get-theme-color($theme, tertiary-container);
+        color: mat.get-theme-color($theme, on-tertiary-container);
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+    }
+
+    a {
+      color: mat.get-theme-color($theme, on-secondary-container);
+      border-radius: 8px;
+
+      &.state-link-active {
+        color: mat.get-theme-color($theme, primary);
+      }
+    }
+  }
+}
+
+@mixin theme($theme) {
+  @if mat.theme-has($theme, color) {
+    @include color($theme);
+  }
+}

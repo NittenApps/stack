@@ -1,0 +1,10 @@
+<mat-toolbar class="list-toolbar" color="tertiary">
+  @if (allowNew) {
+  <button mat-icon-button matTooltip="Nuevo" aria-label="Nuevo" [routerLink]="['__NEW__']" >
+    <fa-duotone-icon [icon]="faPlus" swapOpacity="true" />
+  </button>
+  }
+  <ng-container *ngTemplateOutlet="leftActions" />
+  <span class="spacer"></span>
+  <ng-container *ngTemplateOutlet="rightActions" />
+</mat-toolbar>

@@ -1,0 +1,37 @@
+@if (isHandset$ | async) {
+<mat-sidenav-container class="h-full">
+  <mat-sidenav #drawer class="sidenav flex h-full" fixedInViewport
+    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'" [mode]="(isHandset$ | async) ? 'over' : 'side'"
+    [opened]="(isHandset$ | async) === false">
+    <nas-navbar-vertical class="left-navbar flex-1" footerText="Versión {{version}}" [items]="items" logoText="Demo" />
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <div class="flex flex-1 flex-col">
+      <mat-toolbar color="primary">
+        <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()">
+          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+        </button>
+        <span>Demo</span>
+      </mat-toolbar>
+      <app-dashboard></app-dashboard>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+} @else {
+<mat-sidenav-container class="h-full">
+  <mat-sidenav-content>
+    <div class="flex flex-row h-full overflow-hidden">
+      <nas-navbar-vertical class="mat-app-background left-navbar shadow-lg" footerText="Versión {{version}}"
+        [items]="items" logoText="Demo" [ngClass]="{'folded': navbarFolded, 'open': navbarOpen}"
+        (toggleFold)="setNavbarFolded($event)" (toggleOpen)="setNavbarOpen($event)" role="navigation" />
+      <div class="flex flex-1 flex-col overflow-y-auto"
+        [ngStyle]="{'margin-left': navbarFolded ? '64px' : '0', 'width': navbarFolded ? 'calc(100% - 64px)' : navbarOpen ? 'calc(100% - 299px)' : '100%'}">
+        <mat-toolbar class="flex-none" color="primary">
+          <nas-breadcrumb />
+        </mat-toolbar>
+        <router-outlet />
+      </div>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+}
