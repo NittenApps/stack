@@ -1,6 +1,6 @@
 import { of } from 'rxjs';
 import { StackField } from './components';
-import { StackFieldConfig, StackFieldConfigCache } from './types';
+import { StackFieldConfig } from './types';
 import {
   assignFieldValue,
   assignModelValue,
@@ -15,7 +15,7 @@ import {
   reverseDeepMerge,
 } from './utils';
 
-describe('StackUtis service', () => {
+describe('StackForms utils', () => {
   describe('reverseDeepMerge', () => {
     it('should properly reverse deep merge', () => {
       const foo = { foo: 'bar', obj: {}, arr: [] };
@@ -27,7 +27,6 @@ describe('StackUtis service', () => {
         date: new Date(),
         arr: ['bar'],
       };
-
       reverseDeepMerge(foo, bar);
 
       expect(foo['foo']).toEqual('bar');
@@ -40,8 +39,7 @@ describe('StackUtis service', () => {
   describe('assignFieldValue', () => {
     it('should assign field value through the parent', () => {
       const parent: StackFieldConfig = { model: {} };
-
-      assignFieldValue({ key: 'foo', parent: parent as StackFieldConfigCache }, 'test');
+      assignFieldValue({ key: 'foo', parent }, 'test');
 
       expect(parent.model).toEqual({ foo: 'test' });
     });
@@ -50,33 +48,29 @@ describe('StackUtis service', () => {
   describe('assignModelValue', () => {
     it('should assign model value', () => {
       const model = { name: null };
-
       assignModelValue(model, ['name'], 'foo');
 
       expect(model).toEqual({ name: 'foo' });
     });
 
     it('should assign value with nested path', () => {
-      const model = { path: 'test' };
-
+      const model: any = { path: 'test' };
       assignModelValue(model, ['path', 'to', 'save'], 2);
 
-      expect((model['path'] as any)['to']['save']).toEqual(2);
+      expect(model['path']['to']['save']).toBe(2);
     });
 
     it('should assign value with nested array path', () => {
-      const model = {};
-
+      const model: any = {};
       assignModelValue(model, ['path', '0'], 'test');
 
-      expect(Array.isArray((model as any)['path'])).toBeTrue();
-      expect((model as any)['path'][0]).toEqual('test');
+      expect(Array.isArray(model['path'])).toBeTrue();
+      expect(model['path'][0]).toBe('test');
     });
 
     it('should avoid assigning value by reference', () => {
       const defaultValue = {};
       const model = { array: null };
-
       assignModelValue(model, ['array'], defaultValue);
 
       expect(model.array).not.toBe(defaultValue);
@@ -93,9 +87,9 @@ describe('StackUtis service', () => {
         },
       };
 
-      expect(getFieldValue({ parent: { model }, key: 'path.to.save' })).toBeUndefined();
+      expect(getFieldValue({ parent: { model }, key: 'path.to.save' })).toBe(undefined);
       expect(getFieldValue({ parent: { model }, key: 'value' })).toBe(2);
-      expect(getFieldValue({ parent: { model }, key: 'looks.nested' })).toBeUndefined();
+      expect(getFieldValue({ parent: { model }, key: 'looks.nested' })).toBe(undefined);
       expect(getFieldValue({ parent: { model }, key: 'nested.value' })).toBe('bar');
     });
   });
@@ -103,24 +97,24 @@ describe('StackUtis service', () => {
   describe('getFieldId', () => {
     it('should properly get the field id if id is set in options', () => {
       const options: StackFieldConfig = { id: '1' };
-      const id = getFieldId('stack_1', options, 2);
+      const id = getFieldId('form_1', options, 2);
 
       expect(id).toBe('1');
     });
 
     it('should properly get the field id if id is not set in options', () => {
       const options: StackFieldConfig = { type: 'input', key: 'email' };
-      const id = getFieldId('nas-form_1', options, 2);
+      const id = getFieldId('form_1', options, 2);
 
-      expect(id).toBe('nas-form_1_input_email_2');
+      expect(id).toBe('form_1_input_email_2');
     });
 
     it('should take account passing a non-string for type', () => {
       const customType = StackField;
       let options: StackFieldConfig = { type: customType as any };
-      let id = getFieldId('nas-form_1', options, 2);
+      let id = getFieldId('form_1', options, 2);
 
-      expect(id).toBe('nas-form_1_StackField__2');
+      expect(id).toBe('form_1_StackField__2');
     });
   });
 
@@ -130,7 +124,7 @@ describe('StackUtis service', () => {
 
       expect(keyPath).toEqual([]);
 
-      keyPath = getKeyPath({ key: undefined });
+      keyPath = getKeyPath({ key: null });
 
       expect(keyPath).toEqual([]);
 
@@ -169,13 +163,12 @@ describe('StackUtis service', () => {
 
     it('should attach the key path to the field config', () => {
       const fieldConfig = { key: 'property1.property2[4].property3' };
-
       getKeyPath(fieldConfig);
 
       expect((fieldConfig as any)['_keyPath'].path).toEqual(['property1', 'property2', '4', 'property3']);
     });
 
-    it('should refresh the key path on key updated', () => {
+    it('should refresh keyPath on key updated', () => {
       const fieldConfig = { key: 'property1.property2[4].property3' };
 
       expect(getKeyPath(fieldConfig)).toEqual(['property1', 'property2', '4', 'property3']);
@@ -194,6 +187,7 @@ describe('clone', () => {
 
   it('Observable', () => {
     const v = of(['clone']);
+
     expect(clone(v)).toBe(v);
   });
 
@@ -249,7 +243,6 @@ describe('clone', () => {
         return this.foo;
       }
     }
-
     const foo = new Foo('test');
     const clonedFoo = clone(foo);
 
@@ -267,7 +260,6 @@ describe('clone', () => {
     class Bar {
       constructor(public bar = '', public foo = new Foo(bar)) {}
     }
-
     const bar = new Bar('test');
     const clonedBar = clone(bar);
 
@@ -282,7 +274,6 @@ describe('clone', () => {
     const d = {};
     Object.defineProperty(d, 'a', { get: () => 'test', enumerable: true });
     const value = clone(d);
-
     const propDescriptor = Object.getOwnPropertyDescriptor(value, 'a');
 
     expect(propDescriptor?.get).toBeDefined();
@@ -290,7 +281,7 @@ describe('clone', () => {
   });
 
   it('should use bind of the cloned object', () => {
-    const d: any = {};
+    const d = {};
     Object.defineProperty(d, 'a', {
       get() {
         return this.name;
@@ -298,7 +289,6 @@ describe('clone', () => {
       enumerable: true,
     });
     const value = clone(d);
-
     value.name = 'foo';
 
     expect(value.a).toEqual('foo');
@@ -308,7 +298,6 @@ describe('clone', () => {
 describe('observeDeep', () => {
   it('should not emit first change on observe', () => {
     const spy = jest.fn();
-
     observeDeep({ foo: 'test' }, ['foo'], spy);
 
     expect(spy).not.toHaveBeenCalled();
@@ -317,7 +306,6 @@ describe('observeDeep', () => {
   it('should observe a scalar value', () => {
     const spy = jest.fn();
     const o = { foo: 'test' };
-
     observeDeep(o, ['foo'], spy);
     o.foo = 'bar';
 
@@ -327,7 +315,6 @@ describe('observeDeep', () => {
   it('should observe an object', () => {
     const spy = jest.fn();
     const o = { address: { city: 'foo' } };
-
     observeDeep(o, ['address'], spy);
     const prevAddress = o.address;
     o.address = { city: 'foo' };
@@ -345,7 +332,6 @@ describe('observeDeep', () => {
   it('should observe a nested object', () => {
     const spy = jest.fn();
     const o: any = { foo: { bar: undefined } };
-
     observeDeep(o, ['foo'], spy);
     o.foo = { bar: 'test' };
 
@@ -357,7 +343,6 @@ describe('observeDeep', () => {
     const spy = jest.fn();
     const o = { address: { city: 'foo' } };
     const unsubscribe = observeDeep(o, ['address'], spy);
-
     o.address.city = 'bar';
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -373,7 +358,6 @@ describe('observeDeep', () => {
 describe('observe', () => {
   it('should emit first change on observe', () => {
     const spy = jest.fn();
-
     observe({ foo: 'test' }, ['foo'], spy);
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -386,9 +370,9 @@ describe('observe', () => {
   it('should observe and emit prop changes', () => {
     const spy = jest.fn();
     const o = { foo: 'test' };
-
     observe(o, ['foo'], spy);
     spy.mockReset();
+
     o.foo = 'bar';
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -402,9 +386,9 @@ describe('observe', () => {
   it('should observe a nested prop', () => {
     const spy = jest.fn();
     const o = { group: { foo: 'test' } };
-
     observe(o, ['group', 'foo'], spy);
     spy.mockReset();
+
     o.group.foo = 'bar';
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -418,9 +402,9 @@ describe('observe', () => {
   it('should init and observe an undefined nested prop', () => {
     const spy = jest.fn();
     const o: any = {};
-
     observe(o, ['group', 'foo'], spy);
     spy.mockReset();
+
     o.group.foo = 'bar';
 
     expect(spy).toHaveBeenCalledTimes(1);
@@ -452,7 +436,6 @@ describe('observe', () => {
     const spy = jest.fn();
     const o = { foo: 'test' };
     const observer = observe(o, ['foo'], spy);
-
     spy.mockReset();
     observer.setValue('bar');
 
@@ -463,7 +446,6 @@ describe('observe', () => {
   it('should not allow subscribe duplication', () => {
     const spy = jest.fn();
     const field = { hide: null };
-
     observe(field, ['hide'], spy);
     observe(field, ['hide'], spy);
     observe(field, ['hide'], spy);
@@ -489,7 +471,6 @@ describe('observe', () => {
     const spy = jest.fn();
     const field: any = { hide: null };
     const observer = observe(field, ['hide'], spy);
-
     expect(spy).toHaveBeenCalledTimes(1);
 
     observer.unsubscribe();
@@ -505,15 +486,13 @@ describe('observe', () => {
 
   it('should not change the enumerable descriptor', () => {
     const field = { foo: true };
-
     observe(field, ['foo'], () => {});
-
-    expect(Object.getOwnPropertyDescriptor(field, 'foo')?.enumerable).toBeTrue();
+    expect(Object.getOwnPropertyDescriptor(field, 'foo')?.enumerable).toEqual(true);
 
     defineHiddenProp(field, 'bar', true);
     observe(field, ['bar'], () => {});
 
-    expect(Object.getOwnPropertyDescriptor(field, 'bar')?.enumerable).toBeFalse();
+    expect(Object.getOwnPropertyDescriptor(field, 'bar')?.enumerable).toEqual(false);
   });
 });
 
@@ -534,8 +513,8 @@ describe('getField', () => {
         },
       ],
     };
-    const childField = getField(field, 'parent.child1');
 
+    const childField = getField(field, 'parent.child1');
     expect(childField?.key).toEqual('child1');
   });
 
@@ -548,6 +527,7 @@ describe('getField', () => {
         },
       ],
     };
+
     const childField = getField(field, ['parent', 'child1']);
 
     expect(childField?.key).toEqual('child1');

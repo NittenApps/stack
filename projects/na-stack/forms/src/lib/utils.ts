@@ -1,7 +1,24 @@
 import { ChangeDetectorRef, ComponentRef, NgZone, TemplateRef, Type, ɵNoopNgZone } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
 import { isObservable } from 'rxjs';
-import { IObserveFn, IObserveTarget, IObserver, StackFieldConfig, StackFieldConfigCache } from './types';
+import { StackFieldConfig, StackFieldConfigCache } from './types';
+
+type IObserveFn<T> = (change: { currentValue: T; previousValue?: T; firstChange: boolean }) => void;
+
+type IObserveTarget<T> = {
+  [prop: string]: any;
+  _observers?: {
+    [prop: string]: {
+      value: T;
+      onChange: IObserveFn<T>[];
+    };
+  };
+};
+
+export type IObserver<T> = {
+  setValue: (value: T, emitEvent?: boolean) => void;
+  unsubscribe: Function;
+};
 
 export const STACK_VALIDATORS = ['required', 'pattern', 'minLength', 'maxLength', 'min', 'max'];
 
@@ -40,46 +57,62 @@ export function assignModelValue(model: any, paths: string[], value: any): void 
   model[paths[paths.length - 1]] = clone(value);
 }
 
-export function clone<T>(value: T): T {
+export function clone(value: any): any {
   if (
     !isObject(value) ||
     isObservable(value) ||
     value instanceof TemplateRef ||
-    /* instanceof SafeHtmlImpl */ (value as any).changingThisBreaksApplicationSecurity ||
-    ['RegExp', 'FileList', 'File', 'Blob'].includes(value.constructor.name)
+    (value as any).changingThisBreaksApplicationSecurity ||
+    ['RegExp', 'FileList', 'File', 'Blob'].indexOf(value.constructor.name) !== -1
   ) {
     return value;
   }
 
   if (value instanceof Set) {
-    return new Set(value) as T;
-  }
-  if (value instanceof Map) {
-    return new Map(value) as T;
-  }
-  if (value instanceof Uint8Array) {
-    return new Uint8Array(value) as T;
-  }
-  if (value instanceof Uint16Array) {
-    return new Uint16Array(value) as T;
-  }
-  if (value instanceof Uint32Array) {
-    return new Uint32Array(value) as T;
-  }
-  if ((value as any)._isAMomentObject && isFunction((value as any).clone)) {
-    return (value as any).clone() as T;
-  }
-  if (value instanceof AbstractControl) {
-    return null as T;
-  }
-  if (value instanceof Date) {
-    return new Date((value as Date).getTime()) as T;
-  }
-  if (Array.isArray(value)) {
-    return value.slice(0).map((v) => clone(v)) as T;
+    return new Set(value);
   }
 
-  return Object.getOwnPropertyNames(value).reduce((newVal, prop) => {
+  if (value instanceof Map) {
+    return new Map(value);
+  }
+
+  if (value instanceof Uint8Array) {
+    return new Uint8Array(value);
+  }
+
+  if (value instanceof Uint16Array) {
+    return new Uint16Array(value);
+  }
+
+  if (value instanceof Uint32Array) {
+    return new Uint32Array(value);
+  }
+
+  // https://github.com/moment/moment/blob/master/moment.js#L252
+  if ((value as any)._isAMomentObject && isFunction((value as any).clone)) {
+    return (value as any).clone();
+  }
+
+  if (value instanceof AbstractControl) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return new Date(value.getTime());
+  }
+
+  if (Array.isArray(value)) {
+    return value.slice(0).map((v) => clone(v));
+  }
+
+  // best way to clone a js object maybe
+  // https://stackoverflow.com/questions/41474986/how-to-clone-a-javascript-es6-class-instance
+  const proto = Object.getPrototypeOf(value);
+  let c = Object.create(proto);
+  c = Object.setPrototypeOf(c, proto);
+  // need to make a deep copy so we dont use Object.assign
+  // also Object.assign wont copy property descriptor exactly
+  return Object.keys(value).reduce((newVal, prop) => {
     const propDesc = Object.getOwnPropertyDescriptor(value, prop);
     if (propDesc?.get) {
       Object.defineProperty(newVal, prop, propDesc);
@@ -88,10 +121,10 @@ export function clone<T>(value: T): T {
     }
 
     return newVal;
-  }, Object.create(Object.getPrototypeOf(value)));
+  }, c);
 }
 
-export function defineHiddenProp(field: any, prop: string, defaultValue: any) {
+export function defineHiddenProp(field: any, prop: string, defaultValue: any): void {
   Object.defineProperty(field, prop, { enumerable: false, writable: true, configurable: true });
   field[prop] = defaultValue;
 }
@@ -116,8 +149,8 @@ export function getField(f: StackFieldConfig, key: StackFieldConfig['key']): Sta
       return c;
     }
 
-    if (c.fieldGroup && (isNull(k) || key.indexOf(`${k}.`) === 0)) {
-      const field = getField(c, isNull(k) ? key : key.slice(k.length + 1));
+    if (c.fieldGroup && (isNil(k) || key.indexOf(`${k}.`) === 0)) {
+      const field = getField(c, isNil(k) ? key : key.slice(k.length + 1));
       if (field) {
         return field;
       }
@@ -143,7 +176,7 @@ export function getFieldId(formId: string, field: StackFieldConfig, index: strin
   return [formId, type, field.key, index].join('_');
 }
 
-export function getFieldValue(field: StackFieldConfigCache): any {
+export function getFieldValue(field: StackFieldConfig): any {
   let model = field.parent ? field.parent.model : field.model;
   for (const path of getKeyPath(field)) {
     if (!model) {
@@ -156,7 +189,7 @@ export function getFieldValue(field: StackFieldConfigCache): any {
 }
 
 export function getKeyPath(field: StackFieldConfigCache): string[] {
-  if (!hasKey(field as StackFieldConfig)) {
+  if (!hasKey(field)) {
     return [];
   }
 
@@ -179,18 +212,18 @@ export function getKeyPath(field: StackFieldConfigCache): string[] {
 }
 
 export function hasKey(field: StackFieldConfig): boolean {
-  return !isBlank(field.key) && (!Array.isArray(field.key) || field.key.length > 0);
+  return !isNil(field.key) && field.key !== '' && (!Array.isArray(field.key) || field.key.length > 0);
 }
 
-export function isBlank(value: any): boolean {
-  return value === undefined || value === null || value === '';
+export function isBlankString(value: any) {
+  return value === '';
 }
 
-export function isFunction(value: any) {
+export function isFunction(value: any): value is Function {
   return typeof value === 'function';
 }
 
-export function isHiddenField(field: StackFieldConfig) {
+export function isHiddenField(field: StackFieldConfig): boolean {
   const isHidden = (f: StackFieldConfig) => f.hide || f.expressions?.['hide'];
   let setDefaultValue = !field.resetOnHide || !isHidden(field);
   if (!isHidden(field) && field.resetOnHide) {
@@ -204,24 +237,25 @@ export function isHiddenField(field: StackFieldConfig) {
   return !setDefaultValue;
 }
 
-export function isNoopNgZone(ngZone: NgZone) {
+// check a value is null or undefined
+export function isNil(value: any): value is null | undefined {
+  return value == null;
+}
+
+export function isNoopNgZone(ngZone: NgZone): boolean {
   return ngZone instanceof ɵNoopNgZone;
 }
 
-export function isNull(value: any): value is undefined | null {
-  return value === undefined || value === null;
-}
-
 export function isObject(value: any): value is object {
-  return !isNull(value) && typeof value === 'object';
+  return value != null && typeof value === 'object';
 }
 
-export function isObjectAndSameType(obj1: any, obj2: any): boolean {
+export function isObjectAndSameType(value1: any, value2: any): boolean {
   return (
-    isObject(obj1) &&
-    isObject(obj2) &&
-    Object.getPrototypeOf(obj1) === Object.getPrototypeOf(obj2) &&
-    !(Array.isArray(obj1) || Array.isArray(obj2))
+    isObject(value1) &&
+    isObject(value2) &&
+    Object.getPrototypeOf(value1) === Object.getPrototypeOf(value2) &&
+    !(Array.isArray(value1) || Array.isArray(value2))
   );
 }
 
@@ -229,8 +263,12 @@ export function isPromise(value: any): value is Promise<any> {
   return !!value && typeof value.then === 'function';
 }
 
-export function markFieldForCheck(field: StackFieldConfigCache) {
-  field._componentRefs?.forEach((ref) => {
+export function isUndefined(value: any): value is undefined {
+  return value === undefined;
+}
+
+export function markFieldForCheck(field: StackFieldConfigCache): void {
+  field._componentRefs?.forEach((ref: any) => {
     // NOTE: we cannot use ref.changeDetectorRef, see https://github.com/ngx-formly/ngx-formly/issues/2191
     if (ref instanceof ComponentRef) {
       const changeDetectorRef = ref.injector.get(ChangeDetectorRef);
@@ -256,11 +294,11 @@ export function observe<T = any>(o: IObserveTarget<T>, paths: string[], setFn?: 
 
   const key = paths[paths.length - 1];
   const prop = paths.join('.');
-  if (!o._observers![prop]) {
-    o._observers![prop] = { value: target[key], onChange: [] };
+  if (!o?._observers?.[prop]) {
+    o!._observers![prop] = { value: target[key], onChange: [] };
   }
 
-  const state = o._observers![prop];
+  const state = o!._observers![prop];
   if (target[key] !== state.value) {
     state.value = target[key];
   }
@@ -302,7 +340,7 @@ export function observe<T = any>(o: IObserveTarget<T>, paths: string[], setFn?: 
     unsubscribe() {
       state.onChange = state.onChange.filter((changeFn) => changeFn !== setFn);
       if (state.onChange.length === 0) {
-        delete o._observers![prop];
+        delete o?._observers?.[prop];
       }
     },
   };
@@ -319,8 +357,8 @@ export function observeDeep<T = any>(source: IObserveTarget<T>, paths: string[],
     !firstChange && setFn();
 
     unsubscribe();
-    if (isObject(currentValue) && currentValue.constructor.name === 'Object') {
-      Object.keys(currentValue).forEach((prop) => {
+    if (isObject(currentValue) && (currentValue as object).constructor.name === 'Object') {
+      Object.keys(currentValue as object).forEach((prop) => {
         observers.push(observeDeep(source, [...paths, prop], setFn));
       });
     }
@@ -335,12 +373,13 @@ export function observeDeep<T = any>(source: IObserveTarget<T>, paths: string[],
 export function reverseDeepMerge(dest: any, ...args: any[]): any {
   args.forEach((src) => {
     for (const srcArg in src) {
-      if (isNull(dest[srcArg]) || isBlank(dest[srcArg])) {
+      if (isNil(dest[srcArg]) || isBlankString(dest[srcArg])) {
         dest[srcArg] = clone(src[srcArg]);
       } else if (isObjectAndSameType(dest[srcArg], src[srcArg])) {
         reverseDeepMerge(dest[srcArg], src[srcArg]);
       }
     }
   });
+
   return dest;
 }
