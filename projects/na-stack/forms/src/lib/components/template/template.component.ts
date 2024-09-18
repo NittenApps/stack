@@ -1,21 +1,19 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { FieldType } from '../../directives';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { FieldType } from '../../directives';
 
 /** @ignore */
 @Component({
-  selector: 'nas-template',
-  template: '<div [innerHtml]="template"></div>',
+  selector: 'nas-form-template',
+  template: `<div [innerHtml]="template"></div>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StackTemplateType extends FieldType {
+export class StackFormsTemplateType extends FieldType {
   get template() {
     if (this.field && this.field.template !== this.innerHtml.template) {
       this.innerHtml = {
         template: this.field.template,
-        content: this.props['safeHtml']
-          ? this.sanitizer.bypassSecurityTrustHtml(this.field.template!)
-          : this.field.template,
+        content: this.field.template,
       };
     }
 
