@@ -1,11 +1,11 @@
 import { FormGroup } from '@angular/forms';
 import { ConfigOption, StackFieldConfigCache } from '../types';
-import { StackFormBuilder } from './form-builder.service';
-import { StackFormsConfig } from './form-config.service';
+import { StackFormBuilder } from './builder.service';
+import { StackFormsConfig } from './config.service';
 
 function createBuilder(option?: ConfigOption) {
   const config = new StackFormsConfig();
-  config.addConfig(option || ({ extensions: [{ name: 'core', extension: {} }] } as ConfigOption));
+  config.addConfig(option || { extensions: [{ name: 'core', extension: {} }] });
 
   return new StackFormBuilder(config, null, null, null);
 }
@@ -13,7 +13,6 @@ function createBuilder(option?: ConfigOption) {
 describe('StackFormBuilder service', () => {
   it('should throw error when core extension is not registred', () => {
     const builder = createBuilder({});
-
     const build = () => builder.build({});
 
     expect(build).toThrow(/missing `forRoot\(\)` call/i);
@@ -22,7 +21,6 @@ describe('StackFormBuilder service', () => {
   it('should assign builder props to field options', () => {
     const builder = createBuilder();
     const field: StackFieldConfigCache = {};
-
     builder.build(field);
 
     expect(field.form).toEqual(expect.any(FormGroup));
@@ -140,7 +138,7 @@ describe('StackFormBuilder service', () => {
   });
 
   it('should build nested field', () => {
-    const extension = { onPopulate: () => {}, postPopulate: () => {} };
+    const extension = { onPopulate: () => {} };
     jest.spyOn(extension, 'onPopulate');
 
     const builder = createBuilder({
@@ -148,6 +146,7 @@ describe('StackFormBuilder service', () => {
     });
 
     builder.build({ fieldGroup: [{ key: 'child' }] });
+
     expect(extension.onPopulate).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,17 +1,12 @@
 import { Component } from '@angular/core';
 import { FieldType, FieldWrapper } from '../directives';
-import { StackFormsConfig } from './form-config.service';
+import { StackFormsConfig } from './config.service';
 import { FormControl, Validators } from '@angular/forms';
 import { StackFieldInput } from '@na-stack/forms/testing';
 
-@Component({ selector: 'nas-form-test-cmp', template: '' })
-class FieldTypeComponent extends FieldType {}
-
-@Component({ selector: 'nas-form-test-cmp', template: '' })
-class FieldWrapperComponent extends FieldWrapper {}
-
-describe('FormlyConfig service', () => {
+describe('StackFormsConfig service', () => {
   let config: StackFormsConfig;
+
   beforeEach(() => {
     config = new StackFormsConfig();
     config.addConfig({
@@ -23,7 +18,7 @@ describe('FormlyConfig service', () => {
   });
 
   describe('extra option: showError', () => {
-    it('should return false when field is untouched', () => {
+    it('should return false when fied is untouched', () => {
       const field = {},
         formControl = new FormControl(null, Validators.required),
         options = { parentForm: { submitted: false } };
@@ -43,7 +38,6 @@ describe('FormlyConfig service', () => {
       const field = {},
         formControl = new FormControl(null, Validators.required),
         options = { parentForm: { submitted: false } };
-
       formControl.markAsTouched();
 
       expect(config.extras.showError?.({ options, formControl, field } as any)).toBeTrue();
@@ -69,7 +63,7 @@ describe('FormlyConfig service', () => {
     it('should throw when wrapper not found', () => {
       const config = new StackFormsConfig();
       expect(() => config.getWrapper('custom_wrapper')).toThrow(
-        '[Stack Error] The wrapper "custom_wrapper" could not be found. Please make sure that is registered through the StackFormsModule declaration.'
+        '[StackForms Error] The wrapper "custom_wrapper" could not be found. Please make sure that is registered through the StackFormsModule declaration.'
       );
     });
   });
@@ -78,26 +72,26 @@ describe('FormlyConfig service', () => {
     it('should add type', () => {
       config.setType({ name: 'custom_input' });
 
-      expect(config.getType('input')!.name).toEqual('input');
-      expect(config.getType('custom_input')!.name).toEqual('custom_input');
+      expect(config.getType('input')?.name).toEqual('input');
+      expect(config.getType('custom_input')?.name).toEqual('custom_input');
     });
 
     it('should add type as an array', () => {
       config.setType([{ name: 'custom_input1' }, { name: 'custom_input2' }]);
 
-      expect(config.getType('custom_input1')!.name).toEqual('custom_input1');
-      expect(config.getType('custom_input2')!.name).toEqual('custom_input2');
+      expect(config.getType('custom_input1')?.name).toEqual('custom_input1');
+      expect(config.getType('custom_input2')?.name).toEqual('custom_input2');
     });
 
     it('should handle passing component as type', () => {
-      expect(config.getType(StackFieldInput)!.name).toEqual('StackFieldInput');
+      expect(config.getType(StackFieldInput)?.name).toEqual('StackFieldInput');
     });
 
     it('should throw when type not found', () => {
       const config = new StackFormsConfig();
 
       expect(() => config.getType('custom_input', true)).toThrow(
-        '[Stack Error] The type "custom_input" could not be found. Please make sure that is registered through the StackFormsModule declaration.'
+        '[StackForms Error] The type "custom_input" could not be found. Please make sure that is registered through the StackFormsModule declaration.'
       );
     });
 
@@ -155,8 +149,9 @@ describe('FormlyConfig service', () => {
 
     it('should throw when validator not found', () => {
       const config = new StackFormsConfig();
+
       expect(() => config.getValidator('custom_validator')).toThrow(
-        '[Stack Error] The validator "custom_validator" could not be found. Please make sure that is registered through the StackFormsModule declaration.'
+        '[StackForms Error] The validator "custom_validator" could not be found. Please make sure that is registered through the StackFormsModule declaration.'
       );
     });
   });
@@ -174,3 +169,9 @@ describe('FormlyConfig service', () => {
     });
   });
 });
+
+@Component({ selector: 'nas-form-test-type', template: '' })
+class FieldTypeComponent extends FieldType {}
+
+@Component({ selector: 'nas-form-test-wrapper', template: '' })
+class FieldWrapperComponent extends FieldWrapper {}

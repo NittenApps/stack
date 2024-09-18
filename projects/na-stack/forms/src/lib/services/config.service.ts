@@ -1,5 +1,4 @@
 import { ComponentRef, Injectable, InjectionToken, Type } from '@angular/core';
-import { Observable } from 'rxjs';
 import { FieldType, FieldWrapper } from '../directives';
 import {
   ConfigOption,
@@ -7,7 +6,7 @@ import {
   StackFieldConfig,
   StackFieldConfigCache,
   StackFieldConfigPresetProvider,
-  StackFormExtension,
+  StackFormsExtension,
   TypeOption,
   ValidationMessageOption,
   ValidatorOption,
@@ -15,16 +14,20 @@ import {
 } from '../types';
 import { defineHiddenProp, reverseDeepMerge } from '../utils';
 
+/**
+ * InjectionToken for registering additional stack forms config options (types, wrappers ...).
+ */
 export const STACK_FORMS_CONFIG = new InjectionToken<ConfigOption[]>('STACK_FORMS_CONFIG');
 
-@Injectable({
-  providedIn: 'root',
-})
+/**
+ * Maintains list of stack forms config options. This can be used to register new field type.
+ */
+@Injectable({ providedIn: 'root' })
 export class StackFormsConfig {
-  types: { [key: string]: TypeOption } = {};
-  validators: { [key: string]: ValidatorOption } = {};
-  wrappers: { [key: string]: WrapperOption } = {};
-  messages: { [key: string]: ValidationMessageOption['message'] } = {};
+  types: { [name: string]: TypeOption } = {};
+  validators: { [name: string]: ValidatorOption } = {};
+  wrappers: { [name: string]: WrapperOption } = {};
+  messages: { [name: string]: ValidationMessageOption['message'] } = {};
 
   extras: NonNullable<ConfigOption['extras']> = {
     checkExpressionOn: 'modelChange',
@@ -33,19 +36,19 @@ export class StackFormsConfig {
     renderStackFieldElement: true,
     showError(field: FieldType) {
       return (
-        field.formControl.invalid &&
-        (field.formControl.touched || field.options?.parentForm?.submitted || !!field.field.validation?.show)
+        field.formControl?.invalid &&
+        (field.formControl?.touched || field.options?.parentForm?.submitted || !!field.field.validation?.show)
       );
     },
   };
-  extensions: { [key: string]: StackFormExtension } = {};
-  presets: { [key: string]: StackFieldConfig | StackFieldConfigPresetProvider } = {};
+  extensions: { [name: string]: StackFormsExtension } = {};
+  presets: { [name: string]: StackFieldConfig | StackFieldConfigPresetProvider } = {};
 
-  private extensionsByPriority: Record<number, { [key: string]: StackFormExtension }> = {};
+  private extensionsByPriority: Record<number, { [name: string]: StackFormsExtension }> = {};
 
-  addConfig(config: ConfigOption): void {
+  addConfig(config: ConfigOption) {
     if (config.types) {
-      this.setType(config.types);
+      config.types.forEach((type) => this.setType(type));
     }
     if (config.validators) {
       config.validators.forEach((validator) => this.setValidator(validator));
@@ -54,9 +57,7 @@ export class StackFormsConfig {
       config.wrappers.forEach((wrapper) => this.setWrapper(wrapper));
     }
     if (config.validationMessages) {
-      config.validationMessages.forEach((validationMessage) =>
-        this.addValidatorMessage(validationMessage.name, validationMessage.message)
-      );
+      config.validationMessages.forEach((validation) => this.addValidatorMessage(validation.name, validation.message));
     }
     if (config.extensions) {
       this.setSortedExtensions(config.extensions);
@@ -77,7 +78,7 @@ export class StackFormsConfig {
   }
 
   /** @ignore */
-  getMergedField(field: StackFieldConfigCache = {}): any {
+  getMergedField(field: StackFieldConfig = {}): any {
     const type = this.getType(field.type);
     if (!type) {
       return;
@@ -87,9 +88,9 @@ export class StackFormsConfig {
       reverseDeepMerge(field, type.defaultOptions);
     }
 
-    const extendedDefaults = type.extends && this.getType(type.extends)?.defaultOptions;
-    if (extendedDefaults) {
-      reverseDeepMerge(field, extendedDefaults);
+    const extendDefaults = type.extends && this.getType(type.extends)?.defaultOptions;
+    if (extendDefaults) {
+      reverseDeepMerge(field, extendDefaults);
     }
 
     const componentRef = this.resolveFieldTypeRef(field);
@@ -110,31 +111,29 @@ export class StackFormsConfig {
     if (!name || !this.types[name]) {
       if (throwIfNotFound) {
         throw new Error(
-          `[Stack Error] The type "${name}" could not be found. Please make sure that is registered through the StackFormsModule declaration.`
+          `[StackForms Error] The type "${name}" could not be found. Please make sure that is registered through the StackFormsModule declaration.`
         );
       }
 
       return null;
     }
 
-    this.mergeExtendedType(name!);
+    this.mergeExtendedType(name);
 
-    return this.types[name!];
+    return this.types[name];
   }
 
   getValidator(name: string): ValidatorOption {
     if (!this.validators[name]) {
       throw new Error(
-        `[Stack Error] The validator "${name}" could not be found. Please make sure that is registered through the StackFormsModule declaration.`
+        `[StackForms Error] The validator "${name}" could not be found. Please make sure that is registered through the StackFormsModule declaration.`
       );
     }
 
     return this.validators[name];
   }
 
-  getValidatorMessage(
-    name: string
-  ): string | ((error: any, field: StackFieldConfig) => string | Observable<string>) | undefined {
+  getValidatorMessage(name: string) {
     return this.messages[name];
   }
 
@@ -145,7 +144,7 @@ export class StackFormsConfig {
 
     if (!this.wrappers[name]) {
       throw new Error(
-        `[Stack Error] The wrapper "${name}" could not be found. Please make sure that is registered through the StackFormsModule declaration.`
+        `[StackForms Error] The wrapper "${name}" could not be found. Please make sure that is registered through the StackFormsModule declaration.`
       );
     }
 
@@ -153,14 +152,14 @@ export class StackFormsConfig {
   }
 
   /** @ignore @internal */
-  resolveFieldTypeRef(field: StackFieldConfigCache = {}): ComponentRef<FieldType> | null {
+  resolveFieldTypeRef(field: StackFieldConfigCache = {}): ComponentRef<FieldType> | null | undefined {
     const type: (TypeOption & { _componentRef?: ComponentRef<any> }) | null = this.getType(field.type);
     if (!type) {
       return null;
     }
 
     if (!type.component || type._componentRef) {
-      return <ComponentRef<FieldType>>type._componentRef;
+      return type._componentRef;
     }
 
     const { _viewContainerRef, _injector } = field.options || {};
@@ -173,13 +172,17 @@ export class StackFormsConfig {
     try {
       componentRef.destroy();
     } catch (e) {
-      console.error(`An error ocurred while destroying the Stack Form component type "${field.type}`, e);
+      console.error(`An error occurred while destroying the StackForms component type "${field.type}"`, e);
     }
 
-    return type._componentRef || null;
+    return type._componentRef;
   }
 
-  setType(options: TypeOption | TypeOption[]): void {
+  /**
+   * Allows you to specify a custom type which you can use in your field configuration.
+   * You can pass an object of options, or an array of objects of options.
+   */
+  setType(options: TypeOption | TypeOption[]) {
     if (Array.isArray(options)) {
       options.forEach((option) => this.setType(option));
     } else {
@@ -195,6 +198,7 @@ export class StackFormsConfig {
     }
   }
 
+  /** @ignore */
   setTypeWrapper(type: string, name: string) {
     if (!this.types[type]) {
       this.types[type] = <TypeOption>{};
@@ -202,23 +206,25 @@ export class StackFormsConfig {
     if (!this.types[type].wrappers) {
       this.types[type].wrappers = [];
     }
-    if (!this.types[type].wrappers?.includes(name)) {
-      this.types[type].wrappers?.push(name);
+    if (this.types[type].wrappers.indexOf(name) === -1) {
+      this.types[type].wrappers.push(name);
     }
   }
 
-  setValidator(validator: ValidatorOption) {
-    this.validators[validator.name] = validator;
+  setValidator(options: ValidatorOption) {
+    this.validators[options.name] = options;
   }
 
-  setWrapper(wrapper: WrapperOption): void {
-    this.wrappers[wrapper.name] = wrapper;
-    if (wrapper.types) {
-      wrapper.types.forEach((type) => this.setTypeWrapper(type, wrapper.name));
+  setWrapper(options: WrapperOption) {
+    this.wrappers[options.name] = options;
+    if (options.types) {
+      options.types.forEach((type) => {
+        this.setTypeWrapper(type, options.name);
+      });
     }
   }
 
-  private mergeExtendedType(name: string): void {
+  private mergeExtendedType(name: string) {
     if (!this.types[name].extends) {
       return;
     }
@@ -233,7 +239,8 @@ export class StackFormsConfig {
     }
   }
 
-  private setSortedExtensions(extensionOptions: ExtensionOption[]): void {
+  private setSortedExtensions(extensionOptions: ExtensionOption[]) {
+    // insert new extensions, grouped by priority
     extensionOptions.forEach((extensionOption) => {
       const priority = extensionOption.priority ?? 1;
       this.extensionsByPriority[priority] = {
@@ -241,9 +248,16 @@ export class StackFormsConfig {
         [extensionOption.name]: extensionOption.extension,
       };
     });
+    // flatten extensions object with sorted keys
     this.extensions = Object.keys(this.extensionsByPriority)
       .map(Number)
       .sort((a, b) => a - b)
-      .reduce((acc, prio) => ({ ...acc, ...this.extensionsByPriority[prio] }), {});
+      .reduce(
+        (acc, prio) => ({
+          ...acc,
+          ...this.extensionsByPriority[prio],
+        }),
+        {}
+      );
   }
 }

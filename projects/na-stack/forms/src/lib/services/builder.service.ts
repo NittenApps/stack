@@ -1,12 +1,10 @@
 import { Injectable, Injector, Optional, ViewContainerRef } from '@angular/core';
 import { FormArray, FormGroup, FormGroupDirective } from '@angular/forms';
-import { StackFieldConfig, StackFieldConfigCache, StackFormOptionsCache } from '../types';
+import { StackFormsConfig } from './config.service';
+import { StackFieldConfig, StackFieldConfigCache, StackFormOptions } from '../types';
 import { defineHiddenProp, disableTreeValidityCall, isHiddenField, observe } from '../utils';
-import { StackFormsConfig } from './form-config.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class StackFormBuilder {
   constructor(
     private config: StackFormsConfig,
@@ -15,9 +13,13 @@ export class StackFormBuilder {
     @Optional() private parentForm: FormGroupDirective | null
   ) {}
 
-  build(field: StackFieldConfigCache): void {
+  buildForm(form: FormGroup | FormArray, fieldGroup: StackFieldConfig[] = [], model: any, options: StackFormOptions) {
+    this.build({ fieldGroup, model, form, options });
+  }
+
+  build(field: StackFieldConfig) {
     if (!this.config.extensions['core']) {
-      throw new Error('StackForm: missing `forRoot()` call');
+      throw new Error('NgxFormly: missing `forRoot()` call. use `forRoot()` when registering the `FormlyModule`.');
     }
 
     if (!field.parent) {
@@ -26,10 +28,12 @@ export class StackFormBuilder {
 
     disableTreeValidityCall(field.form, () => {
       this._build(field);
-      if (!field.parent || field.fieldArray) {
-        const options = field.options;
+      // TODO: add test for https://github.com/ngx-formly/ngx-formly/issues/3910
+      if (!field.parent || (field as StackFieldConfigCache).fieldArray) {
+        // detect changes early to avoid reset value by hidden fields
+        const options = (field as StackFieldConfigCache).options;
 
-        if (field.parent && isHiddenField(field as StackFieldConfig)) {
+        if (field.parent && isHiddenField(field)) {
           // when hide is used in expression set defaul value will not be set until detect hide changes
           // which causes default value not set on new item is added
           options?._hiddenFieldsForCheck?.push(field);
@@ -41,25 +45,16 @@ export class StackFormBuilder {
     });
   }
 
-  buildForm(
-    form: FormGroup | FormArray,
-    fieldGroup: StackFieldConfigCache[] = [],
-    model: any,
-    options: StackFormOptionsCache
-  ) {
-    this.build({ fieldGroup, model, form, options });
-  }
-
   private _build(field: StackFieldConfigCache) {
     if (!field) {
       return;
     }
 
     const extensions = Object.values(this.config.extensions);
-    extensions.forEach((extension) => extension.prePopulate?.(field as StackFieldConfig));
-    extensions.forEach((extension) => extension.onPopulate?.(field as StackFieldConfig));
+    extensions.forEach((extension) => extension.prePopulate?.(field));
+    extensions.forEach((extension) => extension.onPopulate?.(field));
     field.fieldGroup?.forEach((f) => this._build(f));
-    extensions.forEach((extension) => extension.postPopulate?.(field as StackFieldConfig));
+    extensions.forEach((extension) => extension.postPopulate?.(field));
   }
 
   private _setOptions(field: StackFieldConfigCache) {
@@ -77,10 +72,10 @@ export class StackFormBuilder {
     }
 
     if (!options.build) {
-      options.build = ((f: StackFieldConfigCache = field) => {
+      options.build = (f: StackFieldConfig = field): StackFieldConfig => {
         this.build(f);
-        return f as StackFieldConfig;
-      }) as (field?: StackFieldConfig | StackFieldConfigCache) => StackFieldConfig;
+        return f;
+      };
     }
 
     if (!options.parentForm && this.parentForm) {
