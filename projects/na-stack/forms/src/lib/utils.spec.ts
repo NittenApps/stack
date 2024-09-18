@@ -487,12 +487,12 @@ describe('observe', () => {
   it('should not change the enumerable descriptor', () => {
     const field = { foo: true };
     observe(field, ['foo'], () => {});
-    expect(Object.getOwnPropertyDescriptor(field, 'foo')?.enumerable).toEqual(true);
+    expect(Object.getOwnPropertyDescriptor(field, 'foo')?.enumerable).toBeTrue();
 
     defineHiddenProp(field, 'bar', true);
     observe(field, ['bar'], () => {});
 
-    expect(Object.getOwnPropertyDescriptor(field, 'bar')?.enumerable).toEqual(false);
+    expect(Object.getOwnPropertyDescriptor(field, 'bar')?.enumerable).toBeFalse();
   });
 });
 
