@@ -1,4 +1,3 @@
-import { VERSION } from '@angular/common';
 import {
   AfterContentInit,
   AfterViewInit,
@@ -14,56 +13,65 @@ import {
   Optional,
   Renderer2,
   SimpleChanges,
+  VERSION,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { Subscription, debounceTime, distinctUntilChanged, isObservable, map, startWith } from 'rxjs';
+import { debounceTime, distinctUntilChanged, isObservable, map, startWith, Subscription } from 'rxjs';
 import { FieldType, FieldWrapper } from '../../directives';
-import { StackFormsConfig } from '../../services';
-import { StackFieldTemplates } from '../../services/field-templates';
-import { IObserver, StackFieldConfig, StackFieldConfigCache, StackHookConfig } from '../../types';
+import { StackFieldTemplates, StackFormsConfig } from '../../services';
+import { StackFieldConfig, StackFieldConfigCache, StackFormsHookConfig } from '../../types';
 import {
   assignFieldValue,
   defineHiddenProp,
   getFieldValue,
   hasKey,
+  IObserver,
   isObject,
   markFieldForCheck,
   observe,
   observeDeep,
 } from '../../utils';
+import { FormControl } from '@angular/forms';
 
+/**
+ * The `<nas-field>` component is used to render the UI widget (layout + type) of a given `field`.
+ */
 @Component({
   selector: 'nas-field',
-  template: '<ng-template #container />',
-  styleUrl: './field.component.scss',
+  template: '<ng-template #container></ng-template>',
+  styleUrls: ['./field.component.scss'],
 })
-export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnChanges, OnDestroy, OnInit {
+export class StackField implements DoCheck, OnInit, OnChanges, AfterContentInit, AfterViewInit, OnDestroy {
+  /** The field config. */
+  @Input() field!: StackFieldConfig;
+
   @ViewChild('container', { read: ViewContainerRef, static: true }) viewContainerRef!: ViewContainerRef;
 
-  @Input() field!: StackFieldConfig | StackFieldConfigCache;
-
-  valueChangesUnsubscribe = () => {};
-
   private hostObservers: (IObserver<any> | Subscription)[] = [];
+
   private componentRefs: (ComponentRef<FieldType> | EmbeddedViewRef<FieldType>)[] = [];
+
   private hooksObservers: Function[] = [];
+
   private detectFieldBuild = false;
 
-  private get containerRef(): ViewContainerRef {
+  private get containerRef() {
     return this.config.extras.renderStackFieldElement ? this.viewContainerRef : this.hostContainerRef;
   }
 
-  private get elementRef(): ElementRef | null {
+  private get elementRef() {
     if (this.config.extras.renderStackFieldElement) {
       return this._elementRef;
     }
     if (this.componentRefs?.[0] instanceof ComponentRef) {
       return this.componentRefs[0].location;
     }
+
     return null;
   }
+
+  valueChangesUnsubscribe = () => {};
 
   constructor(
     private config: StackFormsConfig,
@@ -73,6 +81,20 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
     @Optional() private form: StackFieldTemplates
   ) {}
 
+  ngDoCheck(): void {
+    if (this.detectFieldBuild && this.field && this.field.options) {
+      this.render();
+    }
+  }
+
+  ngOnInit(): void {
+    this.triggerHook('onInit');
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    this.triggerHook('onChanges', changes);
+  }
+
   ngAfterContentInit(): void {
     this.triggerHook('afterContentInit');
   }
@@ -81,32 +103,18 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
     this.triggerHook('afterViewInit');
   }
 
-  ngDoCheck(): void {
-    if (this.detectFieldBuild && this.field.options) {
-      this.render();
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    this.triggerHook('onChanges', changes);
-  }
-
   ngOnDestroy(): void {
-    this.resetRefs(this.field as StackFieldConfigCache);
+    this.resetRefs(this.field);
     this.hostObservers.forEach((hostObserver) => hostObserver.unsubscribe());
     this.hooksObservers.forEach((unsubscribe) => unsubscribe());
     this.valueChangesUnsubscribe();
     this.triggerHook('onDestroy');
   }
 
-  ngOnInit(): void {
-    this.triggerHook('onInit');
-  }
-
   private attachComponentRef<T extends FieldType>(
     ref: ComponentRef<T> | EmbeddedViewRef<T>,
     field: StackFieldConfigCache
-  ) {
+  ): void {
     this.componentRefs.push(ref);
     field._componentRefs?.push(ref);
     if (ref instanceof ComponentRef) {
@@ -137,7 +145,7 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
       });
       subscribes.push(() => {
         if (field._expressions?.[key]?.subscription) {
-          field._expressions[key].subscription!.unsubscribe();
+          field._expressions[key].subscription.unsubscribe();
         }
         expressionObserver.unsubscribe();
       });
@@ -156,16 +164,18 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
       const control = field.formControl;
       let valueChanges = control.valueChanges.pipe(
         map((value) => {
-          field.parsers?.map((parseFn) => (value = (parseFn as any)(value, field)));
+          field.parsers?.map((parserFn) => (value = (parserFn as any)(value, field)));
           if (!Object.is(value, field.formControl?.value)) {
             field.formControl?.setValue(value);
           }
+
           return value;
         }),
         distinctUntilChanged((x, y) => {
           if (x !== y || Array.isArray(x) || isObject(x)) {
             return false;
           }
+
           return true;
         })
       );
@@ -174,7 +184,7 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
         valueChanges = valueChanges.pipe(startWith(control.value));
       }
 
-      const { updateOn, debounce } = field.modelOptions || {};
+      const { updateOn, debounce } = field.modelOptions!;
       if ((!updateOn || updateOn === 'change') && (debounce?.default || 0) > 0) {
         valueChanges = control.valueChanges.pipe(debounceTime(debounce!.default));
       }
@@ -185,7 +195,7 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
           control.patchValue(value, { emitEvent: false, onlySelf: true });
         }
 
-        if (hasKey(field as StackFieldConfig)) {
+        if (hasKey(field)) {
           assignFieldValue(field, value);
         }
         field.options?.fieldChanges?.next({ value, field, type: 'valueChanges' });
@@ -211,6 +221,7 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
       return;
     }
 
+    // require StackForms build
     if (!this.field.options) {
       this.detectFieldBuild = true;
       return;
@@ -222,7 +233,7 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
       observe<boolean>(this.field, ['hide'], ({ firstChange, currentValue }) => {
         const containerRef = this.containerRef;
         if (this.config.extras.lazyRender === false) {
-          firstChange && this.renderField(containerRef, this.field as StackFieldConfigCache);
+          firstChange && this.renderField(containerRef, this.field);
           if (!firstChange || (firstChange && currentValue)) {
             this.elementRef &&
               this.renderer.setStyle(this.elementRef.nativeElement, 'display', currentValue ? 'none' : '');
@@ -234,14 +245,14 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
               this.renderer.removeAttribute(this.elementRef?.nativeElement, 'class');
             }
           } else {
-            this.renderField(containerRef, this.field as StackFieldConfigCache);
+            this.renderField(containerRef, this.field);
             if (this.field.className) {
               this.renderer.setAttribute(this.elementRef?.nativeElement, 'class', this.field.className);
             }
           }
         }
 
-        !firstChange && this.field.options?.detectChanges?.(this.field as StackFieldConfigCache);
+        !firstChange && this.field.options?.detectChanges?.(this.field);
       }),
       observe<string>(this.field, ['className'], ({ firstChange, currentValue }) => {
         if (
@@ -260,14 +271,14 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
           observe<string>(
             this.field,
             ['formControl', prop],
-            ({ firstChange }) => !firstChange && markFieldForCheck(this.field as StackFieldConfigCache)
+            ({ firstChange }) => !firstChange && markFieldForCheck(this.field)
           )
         )
       );
     } else if (this.field.formControl) {
       const statusChanges = this.field.formControl.statusChanges
         .pipe(distinctUntilChanged())
-        .subscribe(() => markFieldForCheck(this.field as StackFieldConfigCache));
+        .subscribe(() => markFieldForCheck(this.field));
       this.hostObservers.push(statusChanges);
     }
   }
@@ -278,16 +289,16 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
     wrappers: StackFieldConfig['wrappers'] = []
   ): void {
     if (this.containerRef === containerRef) {
-      this.resetRefs(this.field as StackFieldConfigCache);
+      this.resetRefs(this.field);
       this.containerRef.clear();
-      wrappers = this.field.wrappers;
+      wrappers = this.field?.wrappers;
     }
 
     if ((wrappers?.length || 0) > 0) {
       const [wrapper, ...wps] = wrappers!;
       const { component } = this.config.getWrapper(wrapper);
 
-      const ref = containerRef.createComponent<FieldWrapper>(component!);
+      const ref = containerRef.createComponent<FieldWrapper>(component);
       this.attachComponentRef(ref, f);
       observe<ViewContainerRef & { _lContainer: any }>(
         ref.instance,
@@ -310,7 +321,7 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
         }
       );
     } else if (f?.type) {
-      const inlineType = this.form?.templates?.find((ref: any) => ref.name === f.type);
+      const inlineType = this.form?.templates?.find((ref) => ref.name === f.type);
       let ref: ComponentRef<any> | EmbeddedViewRef<any>;
       if (inlineType) {
         ref = containerRef.createEmbeddedView(inlineType.ref, { $implicit: f });
@@ -331,7 +342,7 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
       }
 
       if (field._componentRefs) {
-        field._componentRefs = field._componentRefs.filter((ref) => field._componentRefs?.includes(ref));
+        field._componentRefs = field._componentRefs.filter((ref) => this.componentRefs.indexOf(ref) === -1);
       } else {
         defineHiddenProp(this.field, '_componentRefs', []);
       }
@@ -340,16 +351,16 @@ export class StackField implements AfterContentInit, AfterViewInit, DoCheck, OnC
     this.componentRefs = [];
   }
 
-  private triggerHook(name: keyof StackHookConfig, changes?: SimpleChanges) {
-    if (name === 'onInit' || (name === 'onChanges' && changes?.['field'] && !changes?.['field'].firstChange)) {
+  private triggerHook(name: keyof StackFormsHookConfig, changes?: SimpleChanges): void {
+    if (name === 'onInit' || (name === 'onChanges' && changes?.['field'] && !changes['field']?.firstChange)) {
       this.valueChangesUnsubscribe();
-      this.valueChangesUnsubscribe = this.fieldChanges(this.field as StackFieldConfigCache);
+      this.valueChangesUnsubscribe = this.fieldChanges(this.field);
     }
 
     if (this.field?.hooks?.[name]) {
       if (!changes || changes['field']) {
-        const r = this.field.hooks[name](this.field as StackFieldConfigCache);
-        if (isObservable(r) && ['onInit', 'afterContentInit', 'afterViewInit'].includes(name)) {
+        const r = this.field.hooks[name](this.field);
+        if (isObservable(r) && ['onInit', 'afterContentInit', 'afterViewInit'].indexOf(name) !== -1) {
           const sub = r.subscribe();
           this.hooksObservers.push(() => sub.unsubscribe());
         }

@@ -2,10 +2,9 @@
  * @jest-environment jsdom
  */
 
-import { CommonModule, JsonPipe, NgFor, NgIf } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Injectable, Optional, Type } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Injectable, Optional } from '@angular/core';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import {
   createFieldChangesSpy,
   createFieldComponent,
@@ -16,22 +15,46 @@ import {
 } from '@na-stack/forms/testing';
 import { BehaviorSubject, lastValueFrom, map, shareReplay, tap, timer } from 'rxjs';
 import { FieldType, FieldWrapper } from '../../directives';
-import { StackFieldConfig, StackFieldConfigCache, StackFormExtension, StackHookFn } from '../../types';
-import { StackFormsModule } from '../../forms.module';
+import { StackFieldConfig, StackFieldConfigCache, StackFormsExtension } from '../../types';
 
 const renderComponent = (field: StackFieldConfig | null, opts: any = {}) => {
   const { config, ...options } = opts;
 
   return createFieldComponent(field, {
-    imports: [CommonModule, StackInputModule],
+    imports: [StackInputModule],
+    declarations: [
+      StackChildComponent,
+      StackGroupLocalControlType,
+      StackOnPopulateType,
+      StackOnPushComponent,
+      StackParentComponent,
+      StackWrapperFormFieldAsync,
+    ],
     config: {
       types: [
-        { name: 'on-push', component: StackOnPushComponent },
-        { name: 'parent', component: StackParentComponent },
-        { name: 'child', component: StackChildComponent },
-        { name: 'on-populate', component: StackOnPopulateType },
+        {
+          name: 'on-push',
+          component: StackOnPushComponent,
+        },
+        {
+          name: 'parent',
+          component: StackParentComponent,
+        },
+        {
+          name: 'child',
+          component: StackChildComponent,
+        },
+        {
+          name: 'on-populate',
+          component: StackOnPopulateType,
+        },
       ],
-      wrappers: [{ name: 'form-field-async', component: StackWrapperFormFieldAsync }],
+      wrappers: [
+        {
+          name: 'form-field-async',
+          component: StackWrapperFormFieldAsync,
+        },
+      ],
       ...(config || {}),
     },
     ...options,
@@ -47,6 +70,7 @@ describe('StackField Component', () => {
 
   it('should allow construct component type', async () => {
     await TestBed.configureTestingModule({
+      declarations: [StackOnPushComponent],
       teardown: { destroyAfterEach: false },
     }).compileComponents();
 
@@ -104,7 +128,6 @@ describe('StackField Component', () => {
         },
         { config: { extras: { lazyRender: false, renderStackFieldElement: false } } }
       );
-
       const nasField = query('nas-field');
       const wrapper = query('nas-wrapper-form-field');
 
@@ -115,8 +138,8 @@ describe('StackField Component', () => {
 
       field.hide = false;
       field.className = '';
-
       detectChanges();
+
       expect(wrapper.styles['display']).toEqual('');
       expect(wrapper.styles['display']).toEqual('');
     });
@@ -180,7 +203,7 @@ describe('StackField Component', () => {
   it('should allow passing wrapper component to the field definition', () => {
     const { query } = renderComponent({
       key: 'title',
-      type: StackFieldInput as Type<FieldType>,
+      type: StackFieldInput,
       wrappers: [StackWrapperFormField],
     });
 
@@ -255,10 +278,9 @@ describe('StackField Component', () => {
   it('init hooks with observables', () => {
     const control = new FormControl();
     const spy = jest.fn();
-    const initHookFn = ((f: StackFieldConfig) => {
+    const initHookFn = (f: StackFieldConfig) => {
       return f.formControl?.valueChanges.pipe(tap(spy));
-    }) as StackHookFn;
-
+    };
     const { fixture } = renderComponent({
       key: 'title',
       type: 'input',
@@ -291,7 +313,7 @@ describe('StackField Component', () => {
     const { query } = renderComponent({
       type: 'input',
       hooks: {
-        onInit: ((f: StackFieldConfigCache) => (f.formControl = new FormControl())) as StackHookFn,
+        onInit: (f: StackFieldConfigCache) => (f.formControl = new FormControl()),
       },
     });
 
@@ -395,11 +417,9 @@ describe('StackField Component', () => {
   it('should update template options of OnPush FieldType #2191', async () => {
     const { field, query } = renderComponent({ type: 'on-populate' });
 
-    expect((field.props as any).getInstanceId()).toEqual(
-      query('nas-on-populate-component').componentInstance.instanceId
-    );
+    expect(field.props!['getInstanceId']()).toEqual(query('nas-on-populate-component').componentInstance.instanceId);
 
-    (field.props as any)['setInstanceId']('123456');
+    field.props!['setInstanceId']('123456');
 
     expect(query('nas-on-populate-component').componentInstance.instanceId).toEqual('123456');
   });
@@ -459,7 +479,6 @@ describe('StackField Component', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith({ value: 'First value', field, type: 'valueChanges' });
       expect(field.model).toEqual({ foo: 'First value' });
-
       subscription.unsubscribe();
     });
 
@@ -477,7 +496,6 @@ describe('StackField Component', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith({ value: 15, field, type: 'valueChanges' });
       expect(field.formControl?.value).toEqual(15);
-
       subscription.unsubscribe();
     });
 
@@ -495,9 +513,10 @@ describe('StackField Component', () => {
       field.formControl?.setValue('15');
 
       expect(spy).not.toHaveBeenCalled();
-      tick(6);
-      expect(spy).toHaveBeenCalled();
 
+      tick(6);
+
+      expect(spy).toHaveBeenCalled();
       subscription.unsubscribe();
     }));
 
@@ -510,13 +529,11 @@ describe('StackField Component', () => {
           updateOn: 'blur',
         },
       });
-
       const [spy, subscription] = createFieldChangesSpy(field);
 
       field.formControl?.setValue('15');
 
       expect(spy).toHaveBeenCalled();
-
       subscription.unsubscribe();
     });
 
@@ -538,7 +555,6 @@ describe('StackField Component', () => {
       });
 
       field.fieldGroup?.[0].formControl?.setValue('***');
-
       expect(field.parent?.model).toEqual({ group: [{ name: '***' }] });
     });
 
@@ -555,7 +571,6 @@ describe('StackField Component', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith({ value: 'First value', field: field.fieldGroup?.[0], type: 'valueChanges' });
       expect(field.parent?.model).toEqual({ foo: { bar: 'First value' } });
-
       subscription.unsubscribe();
     });
 
@@ -573,7 +588,6 @@ describe('StackField Component', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith({ value: { bar: 'foo' }, field, type: 'valueChanges' });
       expect(field.parent?.model).toEqual({ foo: { bar: 'foo' } });
-
       subscription.unsubscribe();
     });
 
@@ -584,13 +598,11 @@ describe('StackField Component', () => {
           { key: 'title', type: 'input' },
         ],
       });
-
       const [spy, subscription] = createFieldChangesSpy(field);
 
       field.formControl?.get('title')?.setValue('***');
 
       expect(spy).toHaveBeenCalledTimes(2);
-
       subscription.unsubscribe();
     });
 
@@ -601,11 +613,10 @@ describe('StackField Component', () => {
           { key: 'title', type: 'input' },
         ],
       });
-
       const inputs = queryAll<HTMLInputElement>('input');
       (inputs as any)[0].triggerEventHandler('input', ɵCustomEvent({ value: 'First' }));
-
       detectChanges();
+
       expect(field.formControl?.value).toEqual({ title: 'First' });
       expect((inputs as any)[0].nativeElement.value).toEqual('First');
       expect((inputs as any)[1].nativeElement.value).toEqual('First');
@@ -624,14 +635,12 @@ describe('StackField Component', () => {
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(field.model).toEqual({ title: 'First value' });
-
       subscription.unsubscribe();
     });
   });
 
   it('should detect formControl status changes', () => {
     const { query, field, detectChanges } = renderComponent({ key: 'foo', type: 'input' });
-
     field.formControl?.markAsTouched();
     field.formControl?.setErrors({ server: { message: 'server error :)' } });
     detectChanges();
@@ -682,8 +691,6 @@ describe('StackField Component', () => {
 
 @Component({
   selector: 'nas-wrapper-form-field-async',
-  standalone: true,
-  imports: [NgIf, StackFormsModule],
   template: `
     <div *ngIf="props.render">
       <ng-container #fieldComponent></ng-container>
@@ -694,8 +701,6 @@ class StackWrapperFormFieldAsync extends FieldWrapper {}
 
 @Component({
   selector: 'nas-on-push-component',
-  standalone: true,
-  imports: [JsonPipe, StackFormsModule],
   template: `
     <div class="props">{{ props | json }}</div>
     <div class="formState">{{ formState | json }}</div>
@@ -706,20 +711,16 @@ export class StackOnPushComponent extends FieldType {}
 
 @Component({
   selector: 'nas-on-populate-component',
-  standalone: true,
-  imports: [StackFormsModule],
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StackOnPopulateType extends FieldType implements StackFormExtension {
+export class StackOnPopulateType extends FieldType implements StackFormsExtension {
   instanceId = Math.random().toString(36).substring(2, 5);
 
   onPopulate(field: StackFieldConfig): void {
-    (field.props as any).getInstanceId = () => this.instanceId;
-    (field.props as any).setInstanceId = (instanceId: string) => (this.instanceId = instanceId);
+    field.props!['getInstanceId'] = () => this.instanceId;
+    field.props!['setInstanceId'] = (instanceId: string) => (this.instanceId = instanceId);
   }
-
-  postPopulate(_: StackFieldConfig): void {}
 }
 
 @Injectable()
@@ -727,9 +728,7 @@ export class ParentService {}
 
 @Component({
   selector: 'nas-parent',
-  standalone: true,
-  imports: [NgFor, StackFormsModule],
-  template: `<nas-field *ngFor="let f of field.fieldGroup" [field]="f"></nas-field>`,
+  template: ` <nas-field *ngFor="let f of field.fieldGroup" [field]="f"></nas-field> `,
   providers: [ParentService],
 })
 export class StackParentComponent extends FieldType {
@@ -749,12 +748,6 @@ export class StackChildComponent extends FieldType {
 }
 
 @Component({
-  standalone: true,
-  imports: [ReactiveFormsModule, StackFormsModule],
-  template: `<input type="text" [formControl]="title" />`,
+  template: `<input type="text" [formControl]="formControl.get('title')" />`,
 })
-export class StackGroupLocalControlType extends FieldType {
-  get title(): FormControl {
-    return this.formControl.get('title')! as FormControl;
-  }
-}
+export class StackGroupLocalControlType extends FieldType {}
