@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FieldType } from '../../directives';
-import { FieldGroupTypeConfig } from '../../types';
-import { StackField } from '../field/field.component';
+import { FieldGroupTypeConfig } from '../../directives/field-type.directive';
 
+/** @ignore */
 @Component({
   selector: 'nas-form-group',
   template: `
