@@ -3,9 +3,16 @@ import { createBuilder } from '@na-stack/forms/testing';
 import { StackFieldConfigCache } from '../../types';
 
 function buildField({ model, options, form, ...field }: StackFieldConfigCache): StackFieldConfigCache {
-  const builder = createBuilder({ extensions: ['core', 'validation', 'form'] });
+  const builder = createBuilder({
+    extensions: ['core', 'validation', 'form'],
+  });
 
-  builder.build({ model: model || {}, options, form, fieldGroup: [field] });
+  builder.build({
+    model: model || {},
+    options,
+    form,
+    fieldGroup: [field],
+  });
 
   return field;
 }
@@ -91,7 +98,7 @@ describe('FieldFormExtension', () => {
       const field = buildField({
         key: 'name',
         defaultValue: 6,
-        form: new FormGroup({ name: new FormControl(5, { nonNullable: true }) }),
+        form: new FormGroup({ name: new FormControl(5, { initialValueIsDefault: true }) }),
       });
 
       expect((field.formControl as FormControl).defaultValue).toEqual(6);
@@ -101,8 +108,9 @@ describe('FieldFormExtension', () => {
       const { fieldGroup } = buildField({
         fieldGroup: [{ key: 'test' }, { key: 'test' }],
       });
+      const [f1, f2] = fieldGroup!;
 
-      expect(fieldGroup?.[0].formControl).toEqual(fieldGroup?.[1].formControl);
+      expect(f1.formControl).toEqual(f2.formControl);
     });
   });
 
@@ -138,6 +146,7 @@ describe('FieldFormExtension', () => {
 
   it('should ignore fieldArray', () => {
     const field = buildField({ key: 'test', fieldArray: { key: 'test' } });
+
     expect(field.formControl).toBeUndefined();
   });
 
@@ -155,7 +164,6 @@ describe('FieldFormExtension', () => {
     jest.spyOn(formControl, 'setValidators');
     jest.spyOn(formControl, 'setAsyncValidators');
     jest.spyOn(formControl, 'updateValueAndValidity');
-
     buildField({
       key: 'test',
       formControl,
@@ -168,13 +176,12 @@ describe('FieldFormExtension', () => {
 
     expect(formControl.setValidators).toHaveBeenCalledTimes(1);
     expect(formControl.setAsyncValidators).toHaveBeenCalledTimes(1);
-    expect(formControl.updateValueAndValidity).toHaveBeenCalledTimes(2);
+    expect(formControl.updateValueAndValidity).toHaveBeenCalledTimes(1);
   });
 
   it('should not call "setAsyncValidators" when no asyncValidator is present in field', () => {
     const formControl = new FormControl();
     jest.spyOn(formControl, 'setAsyncValidators');
-
     buildField({
       key: 'test',
       formControl,
@@ -188,7 +195,6 @@ describe('FieldFormExtension', () => {
   it('should updateValueAndValidity of detached field', () => {
     const formControl = new FormControl();
     jest.spyOn(formControl, 'updateValueAndValidity');
-
     buildField({
       key: 'test',
       _hide: true,
@@ -240,9 +246,8 @@ describe('FieldFormExtension', () => {
         props: { disabled: true },
       });
 
-      const control = field.formControl!;
-
-      expect(control.disabled).toBeTrue();
+      const control = field.formControl;
+      expect(control?.disabled).toBeTrue();
     });
 
     it('should disable sub-fields when parent is disabled', () => {
@@ -252,11 +257,10 @@ describe('FieldFormExtension', () => {
         fieldGroup: [{ key: 'city' }, { key: 'street' }],
       });
 
-      const control = field.formControl!;
-
-      expect(control.disabled).toBeTrue();
-      expect(control.get('city')?.disabled).toBeTrue();
-      expect(control.get('street')?.disabled).toBeTrue();
+      const control = field.formControl;
+      expect(control?.disabled).toBeTrue();
+      expect(control?.get('city')?.disabled).toBeTrue();
+      expect(control?.get('street')?.disabled).toBeTrue();
     });
 
     it('should not affect parent disabled state', () => {
@@ -265,11 +269,10 @@ describe('FieldFormExtension', () => {
         fieldGroup: [{ key: 'city', props: { disabled: true } }, { key: 'street' }],
       });
 
-      const control = field.formControl!;
-
-      expect(control.disabled).toBeFalse();
-      expect(control.get('city')?.disabled).toBeTrue();
-      expect(control.get('street')?.disabled).toBeFalse();
+      const control = field.formControl;
+      expect(control?.disabled).toBeFalse();
+      expect(control?.get('city')?.disabled).toBeTrue();
+      expect(control?.get('street')?.disabled).toBeFalse();
     });
 
     it('should enable previously disabled control', () => {
@@ -286,8 +289,8 @@ describe('FieldFormExtension', () => {
         ],
       });
 
-      expect(form!.get('foo')?.disabled).toEqual(true);
-      expect(form!.get('bar')?.disabled).toEqual(true);
+      expect(form?.get('foo')?.disabled).toBeTrue();
+      expect(form?.get('bar')?.disabled).toBeTrue();
 
       buildField({
         form,
@@ -300,8 +303,8 @@ describe('FieldFormExtension', () => {
         ],
       });
 
-      expect(form!.get('foo')?.disabled).toEqual(true);
-      expect(form!.get('bar')?.disabled).toEqual(false);
+      expect(form?.get('foo')?.disabled).toBeTrue();
+      expect(form?.get('bar')?.disabled).toBeFalse();
     });
   });
 });

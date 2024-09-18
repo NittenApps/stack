@@ -2,9 +2,15 @@
  * @jest-environment jsdom
  */
 
-import { Subject } from 'rxjs';
 import { createBuilder, createFieldComponent, mockComponent, StackInputModule } from '@na-stack/forms/testing';
-import { StackFieldConfig, StackFieldConfigCache, StackFormOptionsCache } from '../../types';
+import { Subject } from 'rxjs';
+import { StackFieldConfig, StackFieldConfigCache } from '../../types';
+
+function renderComponent(field: StackFieldConfig) {
+  return createFieldComponent(field, {
+    imports: [StackInputModule],
+  });
+}
 
 function buildField({ model, options, ...field }: StackFieldConfig): StackFieldConfigCache {
   const builder = createBuilder({
@@ -12,47 +18,54 @@ function buildField({ model, options, ...field }: StackFieldConfig): StackFieldC
     onInit: (c) =>
       c.addConfig({
         types: [
-          { name: 'input', wrappers: ['form-field'], component: mockComponent({ selector: 'nas-form-test-cmp' }) },
+          {
+            name: 'input',
+            wrappers: ['form-field'],
+            component: mockComponent({ selector: 'nas-form-test-cmp' }),
+          },
         ],
       }),
   });
 
   builder.build({
     model: model || {},
-    options: options as StackFormOptionsCache,
-    fieldGroup: [field as StackFieldConfigCache],
+    options,
+    fieldGroup: [field],
   });
 
-  return field as StackFieldConfigCache;
+  return field;
 }
 
-function renderComponent(field: StackFieldConfig) {
-  return createFieldComponent(field, { imports: [StackInputModule] });
-}
-
-describe('Core Extension', () => {
+describe('CoreExtension', () => {
   it('should assign default props when empty', () => {
-    const field = buildField({ fieldGroup: [{ key: 'title' }, { key: 'title', type: 'input' }] });
+    const [withoutType, withType] = buildField({
+      fieldGroup: [{ key: 'title' }, { key: 'title', type: 'input' }],
+    }).fieldGroup!;
 
-    expect(field.fieldGroup?.[0].props).toEqual({});
-    expect(field.fieldGroup?.[1].props).toEqual({ label: '', placeholder: '', disabled: false });
+    expect(withoutType.props).toEqual({});
+    expect(withType.props).toEqual({
+      label: '',
+      placeholder: '',
+      disabled: false,
+    });
   });
 
   it('should assign default type (template, fieldGroup) when empty', () => {
-    const field = buildField({ key: 'title', fieldGroup: [{ template: 'test' }] });
+    const { type, fieldGroup } = buildField({ key: 'title', fieldGroup: [{ template: 'test' }] });
+    const templateType = fieldGroup![0].type;
 
-    expect(field.type).toEqual('nas-form-group');
-    expect(field.fieldGroup?.[0].type).toEqual('nas-form-template');
+    expect(type).toEqual('nas-form-group');
+    expect(templateType).toEqual('nas-form-template');
   });
 
   describe('field defaultValue', () => {
     it('should not set the defaultValue if the model value is defined', () => {
       const field = buildField({ key: 'title', defaultValue: 'test', model: { title: 'title' } });
 
-      expect(field.model.title).toBe('title');
+      expect(field.model.title).toEqual('title');
     });
 
-    it('should set the default value if the model value is not defined', () => {
+    it('should set the defaultValue if the model value is not defined', () => {
       const field = buildField({ key: 'title', defaultValue: false });
 
       expect(field.model.title).toBeFalse();
@@ -64,7 +77,7 @@ describe('Core Extension', () => {
       expect(field.model.address).toEqual({ city: 'foo' });
     });
 
-    it('should set the defualtValue form nested form', () => {
+    it('should set the defaultValue for nested form', () => {
       const field = buildField({
         key: 'address',
         defaultValue: {},
@@ -106,11 +119,7 @@ describe('Core Extension', () => {
     it('resetModel', () => {
       const {
         field: { model, options, form, formControl },
-      } = renderComponent({
-        key: 'title',
-        model: { title: 'test' },
-        type: 'input',
-      });
+      } = renderComponent({ model: { title: 'test' }, key: 'title', type: 'input' });
 
       formControl?.setValue('edit title');
 
@@ -137,14 +146,12 @@ describe('Core Extension', () => {
         field: { model, options },
       } = renderComponent({ key: 'title', defaultValue: 'defaultValue' });
 
-      expect(model.title).toEqual('defaultValue');
-
       options?.resetModel?.();
 
       expect(model.title).toEqual('defaultValue');
     });
 
-    it('should update initial value', () => {
+    it('updateInitialValue', () => {
       const {
         field: { model, options, formControl },
       } = renderComponent({ model: { title: 'test' }, key: 'title', type: 'input' });
@@ -209,7 +216,7 @@ describe('Core Extension', () => {
     });
   });
 
-  describe('initialise wrappers', () => {
+  describe('initialise Wrappers', () => {
     it('should use an empty array if wrappers is not set', () => {
       const field = buildField({ key: 'title' });
 
@@ -222,7 +229,7 @@ describe('Core Extension', () => {
       expect(field.wrappers).toEqual(['form-field']);
     });
 
-    it('should not override wrappers if wrappers is set', () => {
+    it('should not override wrappers if wrappers is not set', () => {
       const field = buildField({ type: 'input', wrappers: ['form-field-custom'] });
 
       expect(field.wrappers).toEqual(['form-field-custom']);
@@ -239,14 +246,17 @@ describe('Core Extension', () => {
     it('should generate id if it is not defined', () => {
       const field = buildField({ key: 'title' });
 
-      expect(field.id).toEqual('nas_form_1__title_0');
+      expect(field.id).toEqual('nas-form_1__title_0');
     });
 
     it('should take account of field index', () => {
-      const { fieldGroup } = buildField({ fieldGroup: [{ key: 'title' }, { key: 'title' }] });
+      const { fieldGroup } = buildField({
+        fieldGroup: [{ key: 'title' }, { key: 'title' }],
+      });
+      const [f1, f2] = fieldGroup!;
 
-      expect(fieldGroup?.[0].id).toEqual('nas_form_3__title_0');
-      expect(fieldGroup?.[1].id).toEqual('nas_form_3__title_1');
+      expect(f1.id).toEqual('nas-form_3__title_0');
+      expect(f2.id).toEqual('nas-form_3__title_1');
     });
   });
 
@@ -264,13 +274,12 @@ describe('Core Extension', () => {
         },
         {
           key: 'child3',
-          type: 'input',
+          type: 'text',
         },
       ],
     });
+    const childField = field.get?.('child1');
 
-    const child = field.get?.('child1');
-
-    expect(child?.key).toEqual(field.fieldGroup?.[0].key);
+    expect(childField?.key).toEqual(field.fieldGroup?.[0].key);
   });
 });

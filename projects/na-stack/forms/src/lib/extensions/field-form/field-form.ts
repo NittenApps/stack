@@ -1,5 +1,4 @@
 import {
-  AbstractControl,
   AbstractControlOptions,
   AsyncValidatorFn,
   FormControl,
@@ -7,12 +6,12 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { of } from 'rxjs';
-import { StackFieldConfigCache, StackFormExtension } from '../../types';
+import { StackFieldConfigCache, StackFormsExtension } from '../../types';
 import { defineHiddenProp, getFieldValue, getKeyPath, hasKey } from '../../utils';
 import { findControl, registerControl, updateValidity } from './utils';
+import { of } from 'rxjs';
 
-export class FieldFormExtension implements StackFormExtension<StackFieldConfigCache> {
+export class FieldFormExtension implements StackFormsExtension {
   private root: StackFieldConfigCache | null = null;
 
   prePopulate(field: StackFieldConfigCache): void {
@@ -22,7 +21,7 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
 
     if (field.parent) {
       Object.defineProperty(field, 'form', {
-        get: () => field.parent?.formControl,
+        get: () => field.parent!.formControl,
         configurable: true,
       });
     }
@@ -47,7 +46,7 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
       let parent: StackFieldConfigCache | undefined = field.parent;
       while (parent) {
         if (hasKey(parent) || !parent.parent) {
-          updateValidity(parent.formControl as AbstractControl, true);
+          updateValidity(parent.formControl!, true);
         }
         parent = parent.parent;
       }
@@ -55,11 +54,11 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
   }
 
   private addFormControl(field: StackFieldConfigCache): void {
+    let control = findControl(field);
     if (field.fieldArray) {
       return;
     }
 
-    let control = findControl(field);
     if (!control) {
       const controlOptions: AbstractControlOptions = { updateOn: field.modelOptions?.updateOn };
 
@@ -67,11 +66,15 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
         control = new FormGroup({}, controlOptions);
       } else {
         const value = hasKey(field) ? getFieldValue(field) : field.defaultValue;
-        control = new FormControl({ value, disabled: !!field.props?.disabled }, { ...controlOptions });
+        control = new FormControl(
+          { value, disabled: !!field.props?.disabled },
+          { ...controlOptions, initialValueIsDefault: true }
+        );
       }
     } else {
       if (control instanceof FormControl) {
-        (control as any).defaultValue = hasKey(field) ? getFieldValue(field) : field.defaultValue;
+        const value = hasKey(field) ? getFieldValue(field) : field.defaultValue;
+        (control as any).defaultValue = value;
       }
     }
 
@@ -87,7 +90,7 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
       return true;
     }
 
-    return field.fieldGroup?.some((f) => f.fieldGroup && !hasKey(f) && this.hasValidators(f, type)) || false;
+    return !!field.fieldGroup?.some((f) => f?.fieldGroup && !hasKey(f) && this.hasValidators(f, type));
   }
 
   private mergeValidators<T>(field: StackFieldConfigCache, type: '_validators' | '_asyncValidators'): T[] {
@@ -116,7 +119,6 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
 
     let markForCheck = false;
     field.fieldGroup?.forEach((f) => f && this.setValidators(f, disabled) && (markForCheck = true));
-
     if (hasKey(field) || !field.parent || (!hasKey(field) && !field.fieldGroup)) {
       const { formControl: c } = field;
       if (c) {
@@ -132,7 +134,7 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
           }
         }
 
-        if (c.validator === null && this.hasValidators(field, '_validators')) {
+        if (null === c.validator && this.hasValidators(field, '_validators')) {
           c.setValidators(() => {
             const v = Validators.compose(this.mergeValidators<ValidatorFn>(field, '_validators'));
             return v ? v(c) : null;
@@ -140,7 +142,7 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
           markForCheck = true;
         }
 
-        if (c.asyncValidator === null && this.hasValidators(field, '_asyncValidators')) {
+        if (null === c.asyncValidator && this.hasValidators(field, '_asyncValidators')) {
           c.setAsyncValidators(() => {
             const v = Validators.composeAsync(this.mergeValidators<AsyncValidatorFn>(field, '_asyncValidators'));
             return v ? v(c) : of(null);
@@ -149,8 +151,9 @@ export class FieldFormExtension implements StackFormExtension<StackFieldConfigCa
         }
 
         if (markForCheck) {
-          updateValidity(c as AbstractControl, true);
+          updateValidity(c, true);
 
+          // update validity of `FormGroup` instance created by field with nested key.
           let parent = c.parent;
           for (let i = 1; i < getKeyPath(field).length; i++) {
             if (parent) {

@@ -1,70 +1,72 @@
 import { FormArray, FormControl, FormGroup } from '@angular/forms';
-import { StackFieldConfigCache } from '../../types';
 import { registerControl, unregisterControl } from './utils';
+import { StackFieldConfig } from '../../types';
 
 describe('registerControl', () => {
   it('FormArray', () => {
-    const field: StackFieldConfigCache = {
+    const field = {
       key: '0',
       formControl: new FormControl(),
-      form: new FormArray<any>([]),
-      parent: { model: {} },
+      form: new FormArray([]) as any,
+      parent: {
+        model: {},
+      },
     };
     registerControl(field);
 
-    expect(field.formControl?.parent).not.toBeNull();
-    expect(field.form?.controls).toHaveLength(1);
-    expect(field.form?.get('0')).toEqual(field.formControl);
+    expect(field.formControl.parent).not.toBeNull();
+    expect(field.form.controls).toHaveLength(1);
+    expect(field.form.get('0')).toEqual(field.formControl);
   });
 
   it('FormGroup', () => {
-    const field: StackFieldConfigCache = {
+    const field = {
       key: '0',
       formControl: new FormControl(),
       form: new FormGroup({}),
-      parent: { model: {} },
+      parent: {
+        model: {},
+      },
     };
     registerControl(field);
 
-    expect(field.formControl?.parent).not.toBeNull();
-    expect(field.form?.get('0')).toEqual(field.formControl);
+    expect(field.form.get('0')).toEqual(field.formControl);
+    expect(field.formControl.parent).not.toBeNull();
   });
 
   it('FormGroup with nested field key', () => {
-    const field: StackFieldConfigCache = {
+    const field = {
       key: 'test.0',
       formControl: new FormControl(),
       form: new FormGroup({ test: new FormGroup({}) }),
-      parent: { model: {} },
+      parent: {
+        model: {},
+      },
     };
-
     registerControl(field);
 
-    expect(field.formControl?.parent).not.toBeNull();
-    expect(field.form?.get('test.0')).toEqual(field.formControl);
+    expect(field.form.get('test.0')).toEqual(field.formControl);
+    expect(field.formControl.parent).not.toBeNull();
   });
 
   it('FormGroup with field array key', () => {
-    const field: StackFieldConfigCache = {
+    const field = {
       key: ['test.0', '111'],
       formControl: new FormControl(),
       form: new FormGroup({}),
     };
-
     registerControl(field);
 
-    expect(field.formControl?.parent).not.toBeNull();
+    expect(field.formControl.parent).not.toBeNull();
   });
 
   it('should keep disabled state in sync with "props.disabled"', () => {
-    const field: StackFieldConfigCache = {
+    const field: StackFieldConfig = {
       key: 'test',
       props: { disabled: false },
       parent: {},
     };
-
     registerControl(field, new FormControl());
-
     field.props!.disabled = true;
 
     expect(field.formControl?.disabled).toBeTrue();
@@ -119,10 +121,8 @@ describe('registerControl', () => {
         formControl: new FormControl(),
         parent: { model: {} },
       };
-
       const spy = jest.fn();
       const subscription = form.valueChanges.subscribe(spy);
-
       registerControl(field);
 
       expect(spy).not.toHaveBeenCalled();
@@ -137,14 +137,12 @@ describe('registerControl', () => {
         formControl: new FormControl(),
         parent: { model: {} },
       };
-
       const spy = jest.fn();
       const subscription = form.valueChanges.subscribe(spy);
-
       registerControl(field, undefined, true);
 
       expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith({ foo: undefined });
+      expect(spy).toHaveBeenCalledWith({ foo: null });
       subscription.unsubscribe();
     });
 
@@ -155,10 +153,8 @@ describe('registerControl', () => {
         formControl: new FormControl(),
         parent: { model: { foo: 'test' } },
       };
-
       const spy = jest.fn();
       const subscription = field.formControl.valueChanges.subscribe(spy);
-
       registerControl(field);
 
       expect(spy).toHaveBeenCalledTimes(1);

@@ -1,7 +1,7 @@
 import { ComponentRef } from '@angular/core';
 import { Subject } from 'rxjs';
 import { StackFormsConfig } from '../../services';
-import { StackFieldConfig, StackFieldConfigCache, StackFormExtension, StackValueChangeEvent } from '../../types';
+import { StackFieldConfig, StackFieldConfigCache, StackFormsExtension, StackFormValueChangeEvent } from '../../types';
 import {
   assignFieldValue,
   clone,
@@ -11,12 +11,13 @@ import {
   getFieldValue,
   hasKey,
   isHiddenField,
+  isUndefined,
   markFieldForCheck,
   observe,
   reverseDeepMerge,
 } from '../../utils';
 
-export class CoreExtension implements StackFormExtension<StackFieldConfigCache> {
+export class CoreExtension implements StackFormsExtension {
   private formId = 0;
 
   constructor(private config: StackFormsConfig) {}
@@ -25,7 +26,6 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
     const root = field.parent;
     this.initRootOptions(field);
     this.initFieldProps(field);
-
     if (root) {
       Object.defineProperty(field, 'options', { get: () => root.options, configurable: true });
       Object.defineProperty(field, 'model', {
@@ -39,12 +39,12 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
       configurable: true,
     });
 
-    this.getFieldComponentInstance(field)?.prePopulate?.(field as StackFieldConfig);
+    this.getFieldComponentInstance(field)?.prePopulate?.(field);
   }
 
   onPopulate(field: StackFieldConfigCache): void {
     this.initFieldOptions(field);
-    this.getFieldComponentInstance(field)?.onPopulate?.(field as StackFieldConfig);
+    this.getFieldComponentInstance(field)?.onPopulate?.(field);
     if (field.fieldGroup) {
       field.fieldGroup.forEach((f, index) => {
         if (f) {
@@ -57,17 +57,17 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
   }
 
   postPopulate(field: StackFieldConfigCache): void {
-    this.getFieldComponentInstance(field)?.postPopulate?.(field as StackFieldConfig);
+    this.getFieldComponentInstance(field)?.postPopulate?.(field);
   }
 
-  private getFieldComponentInstance(field: StackFieldConfigCache): StackFormExtension | undefined {
+  private getFieldComponentInstance(field: StackFieldConfigCache) {
     const componentRefInstance = () => {
       let componentRef = this.config.resolveFieldTypeRef(field);
 
       const fieldComponentRef = field._componentRefs?.slice(-1)[0];
       if (
         fieldComponentRef instanceof ComponentRef &&
-        fieldComponentRef.componentType === componentRef?.componentType
+        fieldComponentRef?.componentType === componentRef?.componentType
       ) {
         componentRef = fieldComponentRef as any;
       }
@@ -79,7 +79,7 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
       defineHiddenProp(
         field,
         '_proxyInstance',
-        new Proxy({} as StackFormExtension, {
+        new Proxy({} as StackFormsExtension, {
           get: (_, prop) => componentRefInstance()?.[prop],
           set: (_, prop, value) => (componentRefInstance()[prop] = value),
         })
@@ -89,21 +89,20 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
     return field._proxyInstance;
   }
 
-  private initFieldProps(field: StackFieldConfigCache): void {
-    Object.defineProperty(field, 'templateOptions', {
-      get: () => field.props,
-      set: (props) => (field.props = props),
-      configurable: true,
-    });
-  }
-
-  private initFieldOptions(field: StackFieldConfigCache): void {
+  private initFieldOptions(field: StackFieldConfigCache) {
     reverseDeepMerge(field, {
-      id: getFieldId(`nas_form_${this.formId}`, field, field.index!),
+      id: getFieldId(`nas-form_${this.formId}`, field, field.index!),
       hooks: {},
       modelOptions: {},
       validation: { messages: {} },
-      props: !field.type || !hasKey(field) ? {} : { label: '', placeholder: '', disabled: false },
+      props:
+        !field.type || !hasKey(field)
+          ? {}
+          : {
+              label: '',
+              placeholder: '',
+              disabled: false,
+            },
     });
 
     if (this.config.extras.resetFieldOnHide && field.resetOnHide !== false) {
@@ -124,8 +123,8 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
 
     if (
       hasKey(field) &&
-      field.defaultValue !== undefined &&
-      getFieldValue(field) === undefined &&
+      !isUndefined(field.defaultValue) &&
+      isUndefined(getFieldValue(field)) &&
       !isHiddenField(field)
     ) {
       assignFieldValue(field, field.defaultValue);
@@ -134,19 +133,29 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
     field.wrappers = field.wrappers || [];
   }
 
-  private initRootOptions(field: StackFieldConfigCache): void {
+  private initFieldProps(field: StackFieldConfigCache): void {
+    Object.defineProperty(field, 'templateOptions', {
+      get: () => field.props,
+      set: (props) => (field.props = props),
+      configurable: true,
+    });
+  }
+
+  private initRootOptions(field: StackFieldConfigCache) {
     if (field.parent) {
       return;
     }
 
-    const options = field.options!;
-    options.formState = options.formState || {};
+    const options = (field.options = field.options || {});
+    field.options.formState = field.options.formState || {};
     if (!options.showError) {
       options.showError = this.config.extras.showError;
     }
+
     if (!options.fieldChanges) {
-      defineHiddenProp(options, 'fieldChanges', new Subject<StackValueChangeEvent>());
+      defineHiddenProp(options, 'fieldChanges', new Subject<StackFormValueChangeEvent>());
     }
+
     if (!options._hiddenFieldsForCheck) {
       options._hiddenFieldsForCheck = [];
     }
@@ -155,11 +164,12 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
       if (f._componentRefs) {
         markFieldForCheck(f);
       }
+
       f.fieldGroup?.forEach((f) => f && options._detectChanges?.(f));
     };
 
     options.detectChanges = (f: StackFieldConfigCache) => {
-      f.options?.checkExpressions?.(f, true);
+      f.options?.checkExpressions?.(f);
       options._detectChanges?.(f);
     };
 
@@ -176,6 +186,6 @@ export class CoreExtension implements StackFormExtension<StackFieldConfigCache> 
     };
 
     options.updateInitialValue = (model?: any) => (options._initialModel = clone(model ?? field.model));
-    field.options?.updateInitialValue?.();
+    field.options.updateInitialValue?.();
   }
 }
