@@ -4,17 +4,21 @@ import { StackFormsConfig } from '../../services';
 import { StackFieldConfig } from '../../types';
 import { isObject, STACK_VALIDATORS } from '../../utils';
 
+/**
+ * The `<nas-validation-message>` component renders the error message of a given `field`.
+ */
 @Component({
   selector: 'nas-validation-message',
-  template: '{{errorMessage$ | async}}',
+  template: '{{ errorMessage$ | async }}',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StackValidationMessage implements OnChanges {
+  /** The field config. */
   @Input() field!: StackFieldConfig;
 
-  errorMessage$?: Observable<unknown>;
+  errorMessage$?: Observable<string | undefined>;
 
-  get errorMessage(): string {
+  get errorMessage(): string | Observable<string> | undefined {
     const control = this.field.formControl;
     for (const error in control?.errors) {
       if (control.errors.hasOwnProperty(error)) {
@@ -22,7 +26,7 @@ export class StackValidationMessage implements OnChanges {
 
         if (isObject(control.errors[error])) {
           if ((control.errors[error] as any).errorPath) {
-            return '';
+            return undefined;
           }
 
           if ((control.errors[error] as any).message) {
@@ -43,19 +47,19 @@ export class StackValidationMessage implements OnChanges {
         }
 
         if (typeof message === 'function') {
-          return message(control.errors[error], this.field) as string;
+          return message(control.errors[error], this.field);
         }
 
-        return message!;
+        return message;
       }
     }
 
-    return '';
+    return undefined;
   }
 
   constructor(private config: StackFormsConfig) {}
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(_: SimpleChanges): void {
     const EXPR_VALIDATORS = STACK_VALIDATORS.map((v) => `templateOptions.${v}`);
     this.errorMessage$ = merge([
       this.field.formControl?.statusChanges,

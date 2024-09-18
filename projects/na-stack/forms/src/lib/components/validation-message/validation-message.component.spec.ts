@@ -5,8 +5,8 @@
 import { DebugElement } from '@angular/core';
 import { createFieldComponent } from '@na-stack/forms/testing';
 import { of, Subject } from 'rxjs';
-import { StackFormsModule } from '../../forms.module';
 import { StackFieldConfig } from '../../types';
+import { StackFormsModule } from '../../forms.module';
 
 function validationMessageContent(query: (v: string) => DebugElement): string {
   return query('nas-validation-message').nativeElement.textContent;
@@ -112,24 +112,27 @@ describe('StackValidationMessage Component', () => {
       // without emit expressionChanges
       field.validation!.messages!['required'] = 'edited required message';
       detectChanges();
+
       expect(validationMessageContent(query)).not.toMatch(/edited required message/);
 
       // emit expressionChanges from a different field
-      field.options!.fieldChanges!.next({
+      field.options?.fieldChanges?.next({
         type: 'expressionChanges',
         property: 'validation.messages.required',
         field: field.parent!,
         value: 'edit required message',
       });
+
       expect(validationMessageContent(query)).not.toMatch(/edited required message/);
 
       // emit expressionChanges from component field
-      field.options!.fieldChanges!.next({
+      field.options?.fieldChanges?.next({
         type: 'expressionChanges',
         property: 'validation.messages.required',
         field: field,
         value: 'edit required message',
       });
+
       expect(validationMessageContent(query)).not.toMatch(/edited required message/);
     });
   });
