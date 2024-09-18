@@ -4,29 +4,16 @@
 
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormArray, FormGroup } from '@angular/forms';
-import {
-  createComponent,
-  createFieldChangesSpy,
-  createFieldComponent,
-  StackInputModule,
-} from '@na-stack/forms/testing';
-import { StackFieldConfig, StackFormOptions } from '../types';
-import { FieldArrayType } from './field-array';
-import { StackFormsModule } from '../forms.module';
-
-type IStackFormInputs = Partial<{
-  form: FormGroup | FormArray;
-  fields: StackFieldConfig[] | null;
-  options: StackFormOptions;
-  model: any;
-  modelChange: (m: any) => void;
-}>;
+import { FormArray } from '@angular/forms';
+import { createFieldChangesSpy, createFieldComponent, StackInputModule } from '@na-stack/forms/testing';
+import { renderComponent as renderFormComponent } from '../components/form/form.component.spec';
+import { StackFieldConfig } from '../types';
+import { FieldArrayType } from './field-array-type.directive';
 
 const renderComponent = (field: StackFieldConfig, config = {}) => {
   return createFieldComponent(field, {
-    imports: [CommonModule, StackInputModule],
-    declarations: [],
+    imports: [StackInputModule, CommonModule],
+    declarations: [ArrayTypeComponent],
     config: {
       types: [
         {
@@ -36,30 +23,6 @@ const renderComponent = (field: StackFieldConfig, config = {}) => {
       ],
       ...config,
     },
-  });
-};
-
-const renderFormComponent = (inputs: IStackFormInputs, config: any = {}): any => {
-  inputs = {
-    form: new FormGroup({}),
-    model: {},
-    options: {},
-    fields: [],
-    modelChange: () => {},
-    ...inputs,
-  };
-
-  return createComponent<IStackFormInputs>({
-    template: `
-    <form [formGroup]="form">
-      <nas-form [model]="model" [fields]="fields" [options]="options" [form]="form"
-          (modelChange)="modelChange($event)" />
-    </form>
-    `,
-    inputs,
-    config,
-    imports: [CommonModule, StackInputModule],
-    ...config,
   });
 };
 
@@ -148,7 +111,7 @@ describe('Array Field Type', () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith({ value: [undefined], field, type: 'valueChanges' });
-    expect(field.parent!.model).toEqual({ array: [undefined] });
+    expect(field.parent?.model).toEqual({ array: [undefined] });
 
     // update
     spy.mockReset();
@@ -157,7 +120,7 @@ describe('Array Field Type', () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith({ value: '***', field: field.fieldGroup![0], type: 'valueChanges' });
-    expect(field.parent!.model).toEqual({ array: ['***'] });
+    expect(field.parent?.model).toEqual({ array: ['***'] });
 
     // remove
     spy.mockReset();
@@ -166,7 +129,7 @@ describe('Array Field Type', () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith({ value: [], field, type: 'valueChanges' });
-    expect(field.parent!.model).toEqual({ array: [] });
+    expect(field.parent?.model).toEqual({ array: [] });
 
     subscription.unsubscribe();
   });
@@ -195,7 +158,7 @@ describe('Array Field Type', () => {
       }
     );
     const spy = jest.fn();
-    const subscription = fields[0].formControl.valueChanges.subscribe(spy);
+    const subscription = fields?.[0].formControl?.valueChanges.subscribe(spy);
 
     // add
     setInputs({ model: { foo: [{ title: 1 }] } });
@@ -205,11 +168,11 @@ describe('Array Field Type', () => {
 
     // remove
     spy.mockReset();
-
     setInputs({ model: { foo: [] } });
 
     expect(spy).toHaveBeenCalledWith([]);
-    subscription.unsubscribe();
+
+    subscription?.unsubscribe();
   });
 
   it('should not triggers valueChanges for all fields on add/remove', () => {
@@ -229,7 +192,7 @@ describe('Array Field Type', () => {
     });
 
     const spy = jest.fn();
-    const subscription = field.form!.get('bar')!.valueChanges.subscribe(spy);
+    const subscription = field.form?.get('bar')?.valueChanges.subscribe(spy);
 
     // add
     query('#add').triggerEventHandler('click', {});
@@ -242,7 +205,8 @@ describe('Array Field Type', () => {
     detectChanges();
 
     expect(spy).not.toHaveBeenCalled();
-    subscription.unsubscribe();
+
+    subscription?.unsubscribe();
   });
 
   it('should not triggers valueChanges in children fields on add/remove', () => {
@@ -257,10 +221,10 @@ describe('Array Field Type', () => {
       ],
     });
 
-    const form = field.form!.get('foo') as FormArray;
+    const form = field.form?.get('foo') as FormArray;
 
     const spy = jest.fn();
-    const subscription = form.at(0)!.get('title')!.valueChanges.subscribe(spy);
+    const subscription = form.at(0).get('title')?.valueChanges.subscribe(spy);
 
     // add
     query('#add').triggerEventHandler('click', {});
@@ -273,7 +237,8 @@ describe('Array Field Type', () => {
     detectChanges();
 
     expect(spy).not.toHaveBeenCalled();
-    subscription.unsubscribe();
+
+    subscription?.unsubscribe();
   });
 
   it('should validate field on add/remove', () => {
@@ -287,7 +252,7 @@ describe('Array Field Type', () => {
         },
       ],
     });
-    const form = field.form!.get('foo') as FormArray;
+    const form = field.form?.get('foo') as FormArray;
 
     expect(form.valid).toEqual(true);
 
@@ -324,15 +289,15 @@ describe('Array Field Type', () => {
     query('#add').triggerEventHandler('click', {});
     detectChanges();
 
-    expect(field.fieldGroup![0].fieldGroup!.length).toEqual(1);
-    expect(field.fieldGroup![1].fieldGroup!.length).toEqual(1);
+    expect(field.fieldGroup?.[0].fieldGroup?.length).toEqual(1);
+    expect(field.fieldGroup?.[1].fieldGroup?.length).toEqual(1);
 
     // remove
     query('#remove-0').triggerEventHandler('click', {});
     detectChanges();
 
-    expect(field.fieldGroup![0].fieldGroup!.length).toEqual(0);
-    expect(field.fieldGroup![1].fieldGroup!.length).toEqual(0);
+    expect(field.fieldGroup?.[0].fieldGroup?.length).toEqual(0);
+    expect(field.fieldGroup?.[1].fieldGroup?.length).toEqual(0);
   });
 
   it('should share formControl when field key is duplicated', () => {
@@ -353,7 +318,7 @@ describe('Array Field Type', () => {
       ],
     });
 
-    expect(fieldGroup![0].formControl).toEqual(fieldGroup![1].formControl);
+    expect(fieldGroup?.[0].formControl).toEqual(fieldGroup?.[1].formControl);
   });
 
   it('should not reuse the remove controls', () => {
@@ -381,6 +346,7 @@ describe('Array Field Type', () => {
     expect(form.at(1).value).toBeUndefined();
   });
 
+  // https://github.com/ngx-formly/ngx-formly/issues/2493
   it('should add field when model is null', () => {
     const { field, query, detectChanges } = renderComponent({
       model: null,
@@ -391,8 +357,8 @@ describe('Array Field Type', () => {
     query('#add').triggerEventHandler('click', {});
     detectChanges();
 
-    expect(field.fieldGroup!.length).toEqual(1);
-    expect(field.formControl!.value).toEqual([undefined]);
+    expect(field.fieldGroup?.length).toEqual(1);
+    expect(field.formControl?.value).toEqual([undefined]);
   });
 
   it('should mark the form dirty on Add/Remove', () => {
@@ -400,19 +366,19 @@ describe('Array Field Type', () => {
       key: 'array',
       type: 'array',
     });
-
     const { formControl } = field;
-    expect(formControl!.dirty).toBeFalse();
+
+    expect(formControl?.dirty).toBeFalse();
     query('#add').triggerEventHandler('click', {});
     detectChanges();
 
-    expect(formControl!.dirty).toBeTrue();
+    expect(formControl?.dirty).toBeTrue();
 
-    formControl!.markAsPristine();
+    formControl?.markAsPristine();
     query('#remove-0').triggerEventHandler('click', {});
     detectChanges();
 
-    expect(formControl!.dirty).toBeTrue();
+    expect(formControl?.dirty).toBeTrue();
   });
 
   it('should not mark the form dirty on Add/Remove', () => {
@@ -421,21 +387,19 @@ describe('Array Field Type', () => {
       type: 'array',
     });
 
-    expect(field.form!.dirty).toBeFalse();
+    expect(field.form?.dirty).toBeFalse();
 
     const arrayType = query('nas-form-array').componentInstance as ArrayTypeComponent;
 
     arrayType.add(undefined, null, { markAsDirty: false });
     detectChanges();
+    expect(field.form?.dirty).toBeFalse();
 
-    expect(field.form!.dirty).toBeFalse();
-
-    field.form!.markAsPristine();
-
+    field.form?.markAsPristine();
     arrayType.remove(0, { markAsDirty: false });
     detectChanges();
 
-    expect(field.form!.dirty).toBeFalse();
+    expect(field.form?.dirty).toBeFalse();
   });
 
   it('should not change the form control instance when chinging the field position', () => {
@@ -446,7 +410,6 @@ describe('Array Field Type', () => {
       fieldArray: { type: 'input' },
     });
     const formArray = field.formControl as FormArray;
-
     const formControl = formArray.at(1);
     query('#remove-0').triggerEventHandler('click', {});
     detectChanges();
@@ -469,14 +432,14 @@ describe('Array Field Type', () => {
       },
     });
 
-    const { model, options } = field;
-    const cityField = field.fieldGroup![0];
+    const { fieldGroup, model, options } = field;
+    const [cityField] = fieldGroup!;
 
     expect(cityField.hide).toBeTrue();
     expect(cityField.className).toEqual('test');
 
     model[0] = 'custom';
-    options!.checkExpressions!(cityField);
+    options?.checkExpressions?.(cityField);
     detectChanges();
 
     expect(cityField.hide).toBeFalse();
@@ -493,8 +456,9 @@ describe('Array Field Type', () => {
     const form = formControl as FormArray;
 
     expect(form.controls).toHaveLength(4);
+
     model.length = 1;
-    options!.build!(field);
+    options?.build?.(field);
 
     expect(form.controls).toHaveLength(1);
   });
@@ -513,27 +477,29 @@ describe('Array Field Type', () => {
 
     expect(form.controls).toHaveLength(4);
 
-    options!.resetModel!({ address: [{}] });
+    options?.resetModel?.({ address: [{}] });
     expect(form.controls).toHaveLength(1);
 
-    form!.get('0.name')!.patchValue('TEST');
+    form.get('0.name')?.patchValue('TEST');
     const { model } = field;
+
     expect(model[0]).toEqual({ name: 'TEST' });
   });
+
   it('should detect changes on re-build', () => {
     const { field, queryAll, detectChanges } = renderComponent({
       key: 'address',
       type: 'array',
       defaultValue: [1],
       hooks: {
-        onInit: (f: StackFieldConfig) => (f.model.length = 4),
+        onInit: (f) => (f.model.length = 4),
       },
     });
 
     expect(queryAll('nas-form-array > nas-field')).toHaveLength(1);
 
     field.model.length = 4;
-    field.options!.build!(field.parent);
+    field.options?.build?.(field.parent);
     detectChanges();
 
     expect(queryAll('nas-form-array > nas-field')).toHaveLength(4);
@@ -552,7 +518,7 @@ describe('Array Field Type', () => {
       );
 
       expect(field.model).toEqual([null]);
-      expect(field.fieldGroup!.length).toEqual(1);
+      expect(field.fieldGroup?.length).toEqual(1);
     });
 
     it('should toggle default value on hide changes', () => {
@@ -568,14 +534,14 @@ describe('Array Field Type', () => {
       );
 
       expect(field.model).toEqual(undefined);
-      expect(field.fieldGroup!.length).toEqual(0);
+      expect(field.fieldGroup?.length).toEqual(0);
 
       field.hide = false;
-      field.options!.checkExpressions!(field.parent!);
+      field.options?.checkExpressions?.(field.parent!);
       detectChanges();
 
       expect(field.model).toEqual([null]);
-      expect(field.fieldGroup!.length).toEqual(1);
+      expect(field.fieldGroup?.length).toEqual(1);
     });
 
     it('should set default value when insert at index', () => {
@@ -589,7 +555,6 @@ describe('Array Field Type', () => {
         },
         { extras: { resetFieldOnHide: true } }
       );
-
       detectChanges();
 
       expect(field.model).toEqual([null]);
@@ -612,19 +577,16 @@ describe('Array Field Type', () => {
         type: 'input',
       },
     });
-
     const arrayType = query('nas-form-array').componentInstance as ArrayTypeComponent;
     arrayType.add();
     detectChanges();
 
-    expect(field.form!.value).toEqual({ foo: ['test'] });
+    expect(field.form?.value).toEqual({ foo: ['test'] });
   });
 });
 
 @Component({
   selector: 'nas-form-array',
-  standalone: true,
-  imports: [CommonModule, StackFormsModule],
   template: `
     <ng-container *ngFor="let field of field.fieldGroup; let i = index">
       <nas-field [field]="field"></nas-field>

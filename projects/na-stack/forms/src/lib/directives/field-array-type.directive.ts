@@ -1,21 +1,22 @@
 import { Directive } from '@angular/core';
 import { FormArray } from '@angular/forms';
-import { findControl, registerControl, unregisterControl } from '../extensions/field-form/utils';
-import { StackFieldConfig, StackFieldConfigCache, StackFormExtension } from '../types';
-import { FieldArrayTypeConfig } from '../types/field-array-type';
+import { StackFieldConfig, StackFieldConfigCache, StackFormsExtension } from '../types';
+import { FieldType } from './field-type.directive';
 import { assignFieldValue, clone, getFieldValue, hasKey } from '../utils';
-import { FieldType } from './field-type';
+import { findControl, registerControl, unregisterControl } from '../extensions/field-form/utils';
+
+export interface FieldArrayTypeConfig<T = StackFieldConfig['props']> extends StackFieldConfig<T> {
+  formControl: FormArray;
+  props: NonNullable<T>;
+}
 
 @Directive()
 export abstract class FieldArrayType<F extends StackFieldConfig = FieldArrayTypeConfig> extends FieldType<F>
-  implements StackFormExtension<F> {
+  implements StackFormsExtension<F> {
   onPopulate(field: F): void {
     if (hasKey(field)) {
-      const control = findControl(field as StackFieldConfigCache);
-      registerControl(
-        field as StackFieldConfigCache,
-        control ? control : new FormArray([], { updateOn: field.modelOptions?.updateOn })
-      );
+      const control = findControl(field);
+      registerControl(field, control ? control : new FormArray([], { updateOn: field.modelOptions?.updateOn }));
     }
 
     field.fieldGroup = field.fieldGroup || [];
@@ -23,7 +24,7 @@ export abstract class FieldArrayType<F extends StackFieldConfig = FieldArrayType
     const length = Array.isArray(field.model) ? field.model.length : 0;
     if (field.fieldGroup.length > length) {
       for (let i = field.fieldGroup.length - 1; i >= length; --i) {
-        unregisterControl(field.fieldGroup[i] as StackFieldConfigCache, true);
+        unregisterControl(field.fieldGroup[i], true);
         field.fieldGroup.splice(i, 1);
       }
     }
@@ -38,37 +39,35 @@ export abstract class FieldArrayType<F extends StackFieldConfig = FieldArrayType
     }
   }
 
-  postPopulate(field: F): void {}
-
-  add(i?: number, initialModel?: any, { markAsDirty } = { markAsDirty: true }) {
+  add(i?: number, initialModel?: any, { markAsDirty } = { markAsDirty: true }): void {
     i = i == null ? this.field.fieldGroup!.length : i;
     if (!this.model) {
-      assignFieldValue(this.field as StackFieldConfigCache, []);
+      assignFieldValue(this.field, []);
     }
 
     this.model.splice(i, 0, initialModel ? clone(initialModel) : undefined);
-    this.markFieldForCheck(this.field.fieldGroup?.[i] as StackFieldConfig);
+    this.markFieldForCheck(this.field.fieldGroup![i]);
     this._build();
     markAsDirty && this.formControl.markAsDirty();
   }
 
-  remove(i: number, { markAsDirty } = { markAsDirty: true }) {
+  remove(i: number, { markAsDirty } = { markAsDirty: true }): void {
     this.model.splice(i, 1);
 
-    const field = this.field.fieldGroup?.[i];
+    const field = this.field.fieldGroup![i];
     this.field.fieldGroup?.splice(i, 1);
     this.field.fieldGroup?.forEach((f, key) => this.updateArrayElementKey(f, `${key}`));
-    unregisterControl(field as StackFieldConfigCache, true);
+    unregisterControl(field, true);
     this._build();
     markAsDirty && this.formControl.markAsDirty();
   }
 
-  private _build() {
+  private _build(): void {
     const fields = (this.field as StackFieldConfigCache).formControl?._fields ?? [this.field];
     fields.forEach((f) => (this.options as any).build(f));
     this.options?.fieldChanges?.next({
       field: this.field,
-      value: getFieldValue(this.field as StackFieldConfigCache),
+      value: getFieldValue(this.field),
       type: 'valueChanges',
     });
   }
@@ -84,7 +83,7 @@ export abstract class FieldArrayType<F extends StackFieldConfig = FieldArrayType
     }
   }
 
-  private updateArrayElementKey(f: StackFieldConfig, newKey: string) {
+  private updateArrayElementKey(f: StackFieldConfig, newKey: string): void {
     if (hasKey(f)) {
       f.key = newKey;
       return;
