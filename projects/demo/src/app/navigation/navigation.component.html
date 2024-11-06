@@ -21,13 +21,23 @@
 <mat-sidenav-container class="h-full">
   <mat-sidenav-content>
     <div class="flex flex-row h-full overflow-hidden">
-      <nas-navbar-vertical class="mat-app-background left-navbar shadow-lg" footerText="Versión {{version}}"
-        [items]="items" logoText="Demo" [ngClass]="{'folded': navbarFolded, 'open': navbarOpen}"
-        (toggleFold)="setNavbarFolded($event)" (toggleOpen)="setNavbarOpen($event)" role="navigation" />
+      <nas-navbar-vertical class="mat-app-background left-navbar" footerText="© NittenApps 2024 Versión {{version}}" [items]="items"
+        logoText="Demo" [ngClass]="{'folded': navbarFolded, 'open': navbarOpen}" (toggleFold)="setNavbarFolded($event)"
+        (toggleOpen)="setNavbarOpen($event)" role="navigation" />
       <div class="flex flex-1 flex-col overflow-y-auto"
         [ngStyle]="{'margin-left': navbarFolded ? '64px' : '0', 'width': navbarFolded ? 'calc(100% - 64px)' : navbarOpen ? 'calc(100% - 299px)' : '100%'}">
         <mat-toolbar class="flex-none" color="primary">
           <nas-breadcrumb />
+          <span class="spacer"></span>
+          <a class="toolbar-composite-button" tabindex="-1" [matMenuTriggerFor]="userMenu">
+            <span class="toolbar-avatar">
+              <img src="images/profile.png">
+            </span>
+            <span>Usuario</span>
+            <span class="icon">
+              <fa-icon [icon]="faAngleDown" [fixedWidth]="true" aria-hidden="true" />
+            </span>
+          </a>
         </mat-toolbar>
         <router-outlet />
       </div>
@@ -35,3 +45,10 @@
   </mat-sidenav-content>
 </mat-sidenav-container>
 }
+
+<mat-menu #userMenu="matMenu" class="shadow-md" xPosition="before">
+  <button mat-menu-item (click)="logout()">
+    <fa-icon [icon]="faRightFromBracket" [fixedWidth]="true" role="img" size="lg" aria-hidden="true" />
+    <span>Salir</span>
+  </button>
+</mat-menu>

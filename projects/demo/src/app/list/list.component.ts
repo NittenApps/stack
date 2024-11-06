@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { FaDuotoneIconComponent } from '@fortawesome/angular-fontawesome';
 import { faMagnifyingGlass, faQuestion } from '@fortawesome/pro-duotone-svg-icons';
-import { ListComponent as NASListComponent, ListToolbarComponent, Column } from '@na-stack/components';
+import { ListComponent as NASListComponent, ListToolbarComponent, Column } from '@nittenapps/components';
 import { Demo } from '../types/demo';
 
 @Component({
@@ -40,6 +40,11 @@ export class ListComponent {
       id: 'status',
       title: 'Estatus',
       field: 'status.name',
+    },
+    {
+      id: 'value',
+      title: 'Valor',
+      type: 'decimal',
     },
   ];
 

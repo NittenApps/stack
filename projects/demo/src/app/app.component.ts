@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { NewVersionCheckerService } from '@na-stack/common';
+import { NewVersionCheckerService } from '@nittenapps/common';
 import { NavigationComponent } from './navigation/navigation.component';
 
 @Component({

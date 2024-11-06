@@ -1,10 +1,14 @@
 @use '@angular/material' as mat;
+@use './styles/input-theme';
 @use './styles/navbar-theme';
 @use './styles/table-theme';
+@use './styles/tabs-theme';
 @use './styles/toolbar-theme';
 
 @mixin theme($theme) {
+  @include input-theme.theme($theme);
   @include navbar-theme.theme($theme);
   @include table-theme.theme($theme);
+  @include tabs-theme.theme($theme);
   @include toolbar-theme.theme($theme);
 }

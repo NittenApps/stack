@@ -10,10 +10,13 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
+    data: {
+      breadcrumb: 'Tablero',
+    },
   },
   {
     path: 'list',
-    loadComponent: () => import('@na-stack/activity').then((m) => m.ActivityComponent),
+    loadComponent: () => import('@nittenapps/activity').then((m) => m.ActivityComponent),
     data: {
       breadcrumb: 'Lista',
     },

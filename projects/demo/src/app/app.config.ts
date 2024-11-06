@@ -1,10 +1,11 @@
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideZoneChangeDetection, isDevMode } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, isDevMode, importProvidersFrom } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { ApiConfig, NAS_API_CONFIG } from '@na-stack/api';
-import { httpErrorInterceptor, loadingInterceptor } from '@na-stack/common';
+import { ApiConfig, NAS_API_CONFIG } from '@nittenapps/api';
+import { httpErrorInterceptor, loadingInterceptor } from '@nittenapps/common';
+import { StackFormsModule } from '@nittenapps/forms';
 import { environment } from '../environments/environment';
 import { mockBackendInterceptor } from './interceptors/mock-backend.interceptor';
 import { routes } from './app.routes';
@@ -25,5 +26,8 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
+    importProvidersFrom([
+      StackFormsModule.forRoot({ validationMessages: [{ name: 'required', message: 'This field is required' }] }),
+    ]),
   ],
 };

@@ -4,13 +4,21 @@ import { Component, ViewEncapsulation, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterOutlet } from '@angular/router';
-import { faGridHorizontal, faObjectGroup, faTableList } from '@fortawesome/pro-duotone-svg-icons';
-import { BreadcrumbComponent, NavItem, NavbarVerticalComponent } from '@na-stack/components';
-import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import {
+  faCircleInfo,
+  faGridHorizontal,
+  faObjectGroup,
+  faRightFromBracket,
+  faTableList,
+} from '@fortawesome/pro-duotone-svg-icons';
+import { faAngleDown } from '@fortawesome/pro-solid-svg-icons';
+import { BreadcrumbComponent, NavItem, NavbarVerticalComponent } from '@nittenapps/components';
+import { Observable, map, shareReplay } from 'rxjs';
 import { DashboardComponent } from '../dashboard/dashboard.component';
 import { environment } from '../../environments/environment';
 
@@ -21,9 +29,11 @@ import { environment } from '../../environments/environment';
     AsyncPipe,
     BreadcrumbComponent,
     DashboardComponent,
+    FaIconComponent,
     MatButtonModule,
     MatIconModule,
     MatListModule,
+    MatMenuModule,
     MatSidenavModule,
     MatToolbarModule,
     NavbarVerticalComponent,
@@ -36,6 +46,9 @@ import { environment } from '../../environments/environment';
   encapsulation: ViewEncapsulation.None,
 })
 export class NavigationComponent {
+  faAngleDown = faAngleDown;
+  faRightFromBracket = faRightFromBracket;
+
   navbarFolded = true;
   navbarOpen = false;
 
@@ -43,6 +56,11 @@ export class NavigationComponent {
   readonly version: string = environment.version;
 
   private breakpointObserver = inject(BreakpointObserver);
+
+  isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset).pipe(
+    map((result) => result.matches),
+    shareReplay()
+  );
 
   constructor() {
     this.items = [
@@ -65,13 +83,14 @@ export class NavigationComponent {
           },
         ],
       },
+      {
+        label: 'Acerca de...',
+        icon: faCircleInfo,
+      },
     ];
   }
 
-  isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset).pipe(
-    map((result) => result.matches),
-    shareReplay()
-  );
+  logout(): void {}
 
   setNavbarFolded(folded: boolean): void {
     this.navbarFolded = this.navbarOpen = folded;

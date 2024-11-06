@@ -2,7 +2,7 @@ import { Location } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, ResolveFn, Router } from '@angular/router';
-import { ActivityService, NAS_API_CONFIG } from '@na-stack/api';
+import { ActivityService, NAS_API_CONFIG } from '@nittenapps/api';
 import { EMPTY, mergeMap, of } from 'rxjs';
 import { Demo } from '../types/demo';
 

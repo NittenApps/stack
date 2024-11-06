@@ -2,12 +2,18 @@
 
 @mixin color($theme) {
   .mat-toolbar {
+    @include mat.elevation(2);
+
     &.mat-primary[color='primary'] {
       background-color: mat.get-theme-color($theme, primary);
       color: mat.get-theme-color($theme, on-primary);
 
       .mat-mdc-icon-button {
         color: mat.get-theme-color($theme, on-primary);
+
+        &.mat-mdc-button-disabled {
+          color: rgba($color: mat.get-theme-color($theme, on-primary), $alpha: 0.4);
+        }
       }
     }
 
@@ -17,6 +23,10 @@
 
       .mat-mdc-icon-button {
         color: mat.get-theme-color($theme, on-secondary);
+
+        &.mat-mdc-button-disabled {
+          color: rgba($color: mat.get-theme-color($theme, on-secondary), $alpha: 0.4);
+        }
       }
     }
 
@@ -26,6 +36,10 @@
 
       .mat-mdc-icon-button {
         color: mat.get-theme-color($theme, on-tertiary);
+
+        &.mat-mdc-button-disabled {
+          color: rgba($color: mat.get-theme-color($theme, on-tertiary), $alpha: 0.4);
+        }
       }
     }
   }
