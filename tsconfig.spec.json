@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@nittenapps/activity": ["./dist/nittenapps/activity"],
+      "@nittenapps/api": ["./dist/nittenapps/api"],
+      "@nittenapps/auth": ["./dist/nittenapps/auth"],
+      "@nittenapps/common": ["./dist/nittenapps/common"],
+      "@nittenapps/components": ["./dist/nittenapps/components"],
+      "@nittenapps/config": ["./dist/nittenapps/config"],
+      "@nittenapps/forms": ["./dist/nittenapps/forms"],
+      "@nittenapps/forms/testing": ["./projects/nittenapps/forms/testing/src/private-api"]
+    },
+    "types": ["jest", "node"],
+    "noImplicitAny": false,
+    "esModuleInterop": true
+  }
+}
