@@ -1,0 +1,9 @@
+@for (item of items; track item) {
+@if (item.children && visible(item)) {
+<nas-navbar-collapsible class="nav-item" [item]="item" [navigation]="this"
+  [ngClass]="{ 'state-active': item.expanded }" />
+}
+@if (!item.children && visible(item)) {
+<nas-navbar-item class="nav-item" [item]="item" />
+}
+}

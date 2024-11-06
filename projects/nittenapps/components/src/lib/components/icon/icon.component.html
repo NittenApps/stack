@@ -1,0 +1,7 @@
+@if (type === 'mat') {
+<mat-icon [class]="class" aria-hidden="true">{{icon}}</mat-icon>
+} @else if (type === 'fa') {
+<fa-icon [icon]="icon" aria-hidden="true" />
+} @else if (type === 'fad') {
+<fa-duotone-icon [icon]="icon" [swapOpacity]="swapOpacity" aria-hidden="true" />
+}
