@@ -4,6 +4,9 @@
 </h1>
 <div mat-dialog-content>
   <span class="error-message">{{data.message}}</span>
+  <br>
+  <br>
+  <span class="timestamp">{{data.timestamp | date: 'dd/MM/yyyy HH:mm:ss'}}</span>
 </div>
 <div mat-dialog-actions align="end" style="margin-top: 16px;">
   <button mat-raised-button color="primary" [mat-dialog-close] type="button">Aceptar</button>
