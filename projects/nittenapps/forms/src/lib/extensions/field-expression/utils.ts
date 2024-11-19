@@ -2,7 +2,7 @@ export function evalStringExpression(expression: string, argNames: string[]): an
   try {
     return Function(...argNames, `return ${expression};`) as any;
   } catch (error) {
-    console.error(error);
+    console.error(expression, error);
   }
 }
 

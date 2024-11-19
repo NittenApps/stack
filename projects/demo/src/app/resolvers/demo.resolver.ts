@@ -8,13 +8,13 @@ import { Demo } from '../types/demo';
 
 export const demoResolver: ResolveFn<Demo> = (route: ActivatedRouteSnapshot) => {
   const location = inject(Location);
-  const activityService = new ActivityService<Demo>(inject(NAS_API_CONFIG), inject(HttpClient));
+  const activityService = new ActivityService<Demo>(inject(NAS_API_CONFIG), inject(HttpClient), 'test');
   const id = route.paramMap.get('id')!;
 
   if (id === '__NEW__') {
     return {};
   }
-  return activityService.getObject('test', id).pipe(
+  return activityService.getObject(id).pipe(
     mergeMap((demo) => {
       if (demo?.body?.object) {
         return of(demo.body.object);

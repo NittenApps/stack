@@ -1,56 +1,126 @@
 import { NgClass, DecimalPipe, DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, Component, Inject, Input, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Inject,
+  Input,
+  numberAttribute,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule, SortDirection } from '@angular/material/sort';
 import { MatTable, MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiConfig, NAS_API_CONFIG } from '@nittenapps/api';
-import { merge, tap } from 'rxjs';
+import { interval, merge, Observable, startWith, Subscription, tap } from 'rxjs';
 import { ListDataSource } from '../../datasources/list.datasource';
-import { Column } from '../../types';
+import { ListStateService } from '../../services/list-state.service';
+import { Column, Filter } from '../../types';
 
 @Component({
   selector: 'nas-list',
   standalone: true,
   imports: [DatePipe, DecimalPipe, MatPaginatorModule, MatSortModule, MatTableModule, NgClass],
   templateUrl: './list.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListComponent<T> implements AfterViewInit, OnInit {
+export class ListComponent<T> implements AfterViewInit, OnChanges, OnDestroy, OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatTable) table!: MatTable<T>;
 
   @Input() activeSort?: string;
   @Input() activeSortDirection: SortDirection = 'asc';
-  @Input() activity!: string;
+  @Input({ transform: numberAttribute }) autorefresh?: number;
+  @Input({ required: true }) activity!: string;
   @Input() baseObject!: T;
-  @Input() columns!: Column[];
+  @Input({ required: true }) columns!: Column[];
   @Input() emptyMessage: string = 'No se encontraron registros';
+  @Input() filter?: Filter;
   @Input() objectId: string = 'id';
   @Input() rowClass?: string | string[] | ((item: any) => string | string[]);
 
+  @Output() filterChange = new EventEmitter<Filter>();
+
   dataSource!: ListDataSource<T>;
   displayedColumns: string[] = [];
+  pageIndex: number = 0;
+  pageSize: number = 15;
+
+  private _filterChange = new EventEmitter<void>();
+  private _subscription$?: Subscription;
 
   constructor(
     @Inject(NAS_API_CONFIG) private apiConfig: ApiConfig,
     private http: HttpClient,
     private route: ActivatedRoute,
-    private router: Router
-  ) {
-  }
+    private router: Router,
+    private stateService: ListStateService
+  ) {}
 
   ngAfterViewInit(): void {
-    merge(this.sort.sortChange, this.paginator.page)
-      .pipe(tap(() => this.dataSource.loadItems()))
-      .subscribe();
+    setTimeout(() => {
+      const state = this.stateService.get(this.activity);
+      this.pageIndex = state.p;
+      this.pageSize = state.p;
+      this.filter = state.f || {};
+      this.stringToSort(state.o?.[0] || this.activeSort);
+
+      merge(this.sort.sortChange, this._filterChange).subscribe(() => (this.paginator.pageIndex = 0));
+
+      let merged: Observable<unknown>;
+      if (this.autorefresh) {
+        merged = merge(interval(this.autorefresh), this.sort.sortChange, this.paginator.page, this._filterChange);
+      } else {
+        merged = merge(this.sort.sortChange, this.paginator.page, this._filterChange);
+      }
+
+      this._subscription$ = merged
+        .pipe(
+          startWith({}),
+          tap(() => {
+            this.dataSource.loadItems(
+              this.paginator.pageIndex,
+              this.paginator.pageSize,
+              this.sort.active ? `${this.sort.active} ${this.sort.direction}` : undefined,
+              this.filter
+            );
+          })
+        )
+        .subscribe();
+    });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    for (const prop in changes) {
+      if (prop === 'filter') {
+        this._filterChange.emit(changes[prop].currentValue);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this._subscription$?.unsubscribe();
+    this.stateService.save(
+      this.activity,
+      this.paginator.pageIndex,
+      this.paginator.pageSize,
+      this.sortToString(),
+      this.filter
+    );
   }
 
   ngOnInit(): void {
     this.dataSource = new ListDataSource(this.apiConfig, this.http, this.activity);
-    this.columns.forEach((column) => this.displayedColumns.push(column.id));
-    this.dataSource.loadItems();
+    this.displayedColumns = this.columns.map((column) => column.id);
   }
 
   getClass(item: T): string | string[] | undefined {
@@ -74,7 +144,7 @@ export class ListComponent<T> implements AfterViewInit, OnInit {
       var value = item;
       keys.forEach((key) => {
         if (value) {
-          value = (<any>value)[key];
+          value = (value as any)[key];
         }
       });
       if (typeof value === 'object') {
@@ -84,11 +154,31 @@ export class ListComponent<T> implements AfterViewInit, OnInit {
       }
       return undefined;
     } else {
-      return (<any>item)[column.id];
+      return (item as any)[column.id];
     }
   }
 
   showItem(item: T): void {
-    this.router.navigate([(<any>item)[this.objectId]], { relativeTo: this.route });
+    this.router.navigate([(item as any)[this.objectId]], { relativeTo: this.route });
+  }
+
+  private sortToString(): string[] {
+    let sort: string[] = [];
+    if (this.sort.active && this.sort.direction) {
+      sort.push(this.sort.active + ' ' + this.sort.direction);
+    } else if (!!this.activeSort) {
+      sort.push(this.activeSort);
+    }
+    return sort;
+  }
+
+  private stringToSort(sort?: string): void {
+    if (sort) {
+      const parts = sort.split(' ');
+      this.activeSort = parts[0];
+      if (parts.length > 1) {
+        this.activeSortDirection = parts[1] as SortDirection;
+      }
+    }
   }
 }

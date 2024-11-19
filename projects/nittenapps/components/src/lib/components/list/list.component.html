@@ -8,10 +8,10 @@
     <td mat-cell *matCellDef="let item"
       [ngClass]="{'date': ['date', 'datetime'].includes(column.type || ''), 'number': ['decimal', 'integer'].includes(column.type || '')}">
       {{column.type === 'integer' ? (getNumberValue(column, item) | number: '1.0-0')
-          : column.type === 'decimal' ? (getNumberValue(column, item) | number: '1.2-2')
-          : column.type === 'date' ? (getValue(column, item) | date: 'dd/MM/yyyy')
-          : column.type === 'datetime' ? (getValue(column, item) | date: 'dd/MM/yyyy HH:mm')
-          : getValue(column, item)}}</td>
+      : column.type === 'decimal' ? (getNumberValue(column, item) | number: '1.2-2')
+      : column.type === 'date' ? (getValue(column, item) | date: 'dd/MM/yyyy')
+      : column.type === 'datetime' ? (getValue(column, item) | date: 'dd/MM/yyyy HH:mm')
+      : getValue(column, item)}}</td>
   </ng-container>
   }
 
@@ -23,5 +23,5 @@
   </tr>
 </table>
 
-<mat-paginator #paginator [length]="dataSource.totalItems" [pageIndex]="0" [pageSize]="10"
-  [pageSizeOptions]="[5, 10, 20]" aria-label="Seleccionar página" />
+<mat-paginator #paginator [length]="dataSource.totalItems" [pageIndex]="pageIndex" [pageSize]="pageSize"
+  [pageSizeOptions]="[10, 15, 20]" [showFirstLastButtons]="true" aria-label="Seleccionar página" />

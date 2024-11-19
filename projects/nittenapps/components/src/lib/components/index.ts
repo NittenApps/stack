@@ -21,6 +21,8 @@ export {
   NavigationItemComponent,
 };
 
+export { BaseDetailComponent } from './detail';
+
 export const COMPONENTS_COMPONENTS: Provider[] = [
   BreadcrumbComponent,
   DetailToolbarComponent,

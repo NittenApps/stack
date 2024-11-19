@@ -7,7 +7,7 @@ import { Subject } from 'rxjs';
   standalone: true,
 })
 export class NormalizeValueDirective implements AfterViewInit, OnDestroy {
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
 
   constructor(@Self() private ngControl: NgControl) {}
 
@@ -16,7 +16,7 @@ export class NormalizeValueDirective implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next(null);
+    this.destroy$.next();
     this.destroy$.complete();
   }
 

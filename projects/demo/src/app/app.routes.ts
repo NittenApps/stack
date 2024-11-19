@@ -1,5 +1,6 @@
 import { Data, Routes } from '@angular/router';
 import { demoResolver } from './resolvers/demo.resolver';
+import { dirtyGuard } from '@nittenapps/common';
 
 export const routes: Routes = [
   {
@@ -28,6 +29,7 @@ export const routes: Routes = [
       {
         path: ':id',
         loadComponent: () => import('./detail/detail.component').then((m) => m.DetailComponent),
+        canDeactivate: [dirtyGuard],
         resolve: { object: demoResolver },
         data: {
           breadcrumb: {

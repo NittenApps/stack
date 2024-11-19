@@ -1,9 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiConfig } from '../types/api-config';
-import { ApiResponse } from '../types/api-response';
-import { ListBody } from '../types/list-body';
-import { ObjectBody } from '../types/object-body';
+import { ApiConfig, ApiResponse, ListBody, ObjectBody } from '../types';
 
 export class ActivityService<T> {
   constructor(private config: ApiConfig, private http: HttpClient, private activity: string) {}
@@ -23,7 +20,7 @@ export class ActivityService<T> {
     page?: number,
     pageSize?: number,
     sort?: string,
-    filter?: { [key: string]: string | number | boolean | readonly (string | number | boolean)[] }
+    filter?: { [key: string]: string | number | boolean | readonly (string | number)[] }
   ): Observable<ApiResponse<T, ListBody<T>>> {
     const params = { ...filter };
     if (page) {

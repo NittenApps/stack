@@ -17,7 +17,7 @@ export class LowercaseDirective implements AfterViewInit, OnDestroy {
   }
 
   private _apply = true;
-  private destroy$ = new Subject();
+  private destroy$ = new Subject<void>();
 
   constructor(private element: ElementRef, @Self() private ngControl: NgControl, private renderer: Renderer2) {}
 
@@ -30,7 +30,7 @@ export class LowercaseDirective implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.destroy$.next(null);
+    this.destroy$.next();
     this.destroy$.complete();
   }
 

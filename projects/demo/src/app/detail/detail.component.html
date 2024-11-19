@@ -1,4 +1,4 @@
-<nas-detail-toolbar [canSave]="form.valid">
+<nas-detail-toolbar [canSave]="form.valid" (save)="save()">
   <ng-template #rightActions>
     <button mat-icon-button matBadge="2" matBadgeSize="large" matTooltip="Alertas" aria-label="Alertas"
       (click)="help()">

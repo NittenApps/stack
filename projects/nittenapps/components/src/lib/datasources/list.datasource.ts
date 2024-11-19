@@ -2,6 +2,7 @@ import { DataSource } from '@angular/cdk/collections';
 import { HttpClient } from '@angular/common/http';
 import { ActivityService, ApiConfig } from '@nittenapps/api';
 import { BehaviorSubject, Observable, catchError, of } from 'rxjs';
+import { Filter } from '../types';
 
 export class ListDataSource<T> extends DataSource<T> {
   totalItems = 0;
@@ -22,14 +23,9 @@ export class ListDataSource<T> extends DataSource<T> {
     this.listSubject.complete();
   }
 
-  loadItems(
-    page?: number,
-    pageSize?: number,
-    sort?: string,
-    filter?: { [key: string]: string | number | boolean | readonly (string | number | boolean)[] }
-  ): void {
+  loadItems(page?: number, pageSize?: number, sort?: string, filter?: Filter): void {
     this.activityService
-      .getList(page, pageSize, sort, filter)
+      .getList(page, pageSize, sort, filter as any)
       .pipe(catchError(() => of({ code: 500, body: { items: [], page: 0, total: 0 } })))
       .subscribe((response) => {
         this.totalItems = response.body.total;

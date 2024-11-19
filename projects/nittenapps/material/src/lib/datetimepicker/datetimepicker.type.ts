@@ -13,7 +13,8 @@ import { MatCalendarCellClassFunction } from '@angular/material/datepicker';
 import { MatCalendarView, MatDatetimepickerComponent } from '@mat-datetimepicker/core';
 import { FieldTypeConfig, StackFieldConfig, StackFormsConfig, ɵobserve as observe } from '@nittenapps/forms';
 import { FieldType, StackFieldProps } from '../form-field';
-import { MatDatetimepickerType } from '@mat-datetimepicker/core/datetimepicker/datetimepicker-type';
+
+type MatDatetimepickerType = 'date' | 'time' | 'month' | 'year' | 'datetime';
 
 interface DatetimepickerProps extends StackFieldProps {
   datetimepickerOptions?: Partial<{
