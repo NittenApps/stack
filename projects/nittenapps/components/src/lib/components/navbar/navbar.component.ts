@@ -1,20 +1,39 @@
-import { NgClass, NgFor, NgForOf, NgIf } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, Input, ViewEncapsulation } from '@angular/core';
+import { Component, Input, Optional, ViewEncapsulation } from '@angular/core';
 import { MatRippleModule } from '@angular/material/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '@nittenapps/auth';
 import { TypeofPipe } from '@nittenapps/common';
 import { NavItem } from '../../types/navbar-item';
 import { IconComponent } from '../icon/icon.component';
 
+const checkRoles = (roles: string[], navItem: NavItem): boolean => {
+  if (navItem.roles) {
+    const requiredRoles: string[] = [];
+    if (typeof navItem.roles === 'string') {
+      requiredRoles.push(navItem.roles);
+    } else {
+      requiredRoles.push(...navItem.roles);
+    }
+    return requiredRoles.some((role) => roles.includes(role));
+  }
+  return true;
+};
+
 @Component({
   selector: 'nas-navbar-item',
   standalone: true,
-  imports: [IconComponent, MatRippleModule, NgClass, RouterModule, TypeofPipe],
+  imports: [IconComponent, MatRippleModule, RouterModule, TypeofPipe],
   templateUrl: './navbar-item.component.html',
 })
 export class NavigationItemComponent {
   @Input() item!: NavItem;
+  @Input() roles!: string[];
+
+  isAllowed(navItem: NavItem): boolean {
+    return checkRoles(this.roles, navItem);
+  }
 }
 
 @Component({
@@ -27,9 +46,14 @@ export class NavigationItemComponent {
 export class NavigationCollapsibleComponent {
   @Input() item!: NavItem;
   @Input() navigation!: NavigationComponent;
+  @Input() roles!: string[];
 
   handleClick(event: any, navItem: NavItem): void {
     this.navigation.handleClick(event, navItem);
+  }
+
+  isAllowed(navItem: NavItem): boolean {
+    return checkRoles(this.roles, navItem);
   }
 
   visible(navItem: NavItem): boolean {
@@ -47,6 +71,12 @@ export class NavigationCollapsibleComponent {
 })
 export class NavigationComponent {
   @Input() items!: NavItem[];
+
+  userRoles: string[];
+
+  constructor(@Optional() auth?: AuthService) {
+    this.userRoles = auth?.getUserRoles() || [];
+  }
 
   handleClick(event: any, navItem: NavItem) {
     for (const item of this.items) {
@@ -72,6 +102,10 @@ export class NavigationComponent {
     if (navItem.command) {
       navItem.command(event, navItem);
     }
+  }
+
+  isAllowed(navItem: NavItem): boolean {
+    return checkRoles(this.userRoles, navItem);
   }
 
   visible(navItem: NavItem): boolean {

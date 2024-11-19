@@ -1,9 +1,9 @@
 @for (item of items; track item) {
-@if (item.children && visible(item)) {
-<nas-navbar-collapsible class="nav-item" [item]="item" [navigation]="this"
-  [ngClass]="{ 'state-active': item.expanded }" />
-}
-@if (!item.children && visible(item)) {
-<nas-navbar-item class="nav-item" [item]="item" />
-}
+  @if (item.children && isAllowed(item) && visible(item)) {
+  <nas-navbar-collapsible class="nav-item" [item]="item" [navigation]="this" [roles]="userRoles"
+    [ngClass]="{ 'state-active': item.expanded }" />
+  }
+  @if (!item.children && isAllowed(item) && visible(item)) {
+  <nas-navbar-item class="nav-item" [item]="item" [roles]="userRoles" />
+  }
 }

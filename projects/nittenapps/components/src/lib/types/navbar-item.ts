@@ -22,6 +22,7 @@ export type NavItem = {
   queryParams?: {
     [k: string]: any;
   };
+  roles?: string | string[];
   routerLink?: any;
   routerLinkActiveOptions?: any;
   separator?: boolean;
@@ -31,4 +32,4 @@ export type NavItem = {
   target?: string;
   title?: string | stringFunc;
   url?: string | stringFunc;
-}
+};

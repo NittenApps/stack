@@ -1,3 +1,4 @@
+@if (isAllowed(item)) {
 @if (item.routerLink) {
 <a class="nav-link" matRipple [attr.target]="item.target" [ngClass]="{ open: item.expanded }"
   [queryParams]="item.queryParams" [routerLink]="item.routerLink" [routerLinkActive]="['state-active']"
@@ -21,11 +22,12 @@
 <div class="children" [@children]="item.expanded ? 'visible' : 'hidden'">
   @for (child of item.children; track child) {
   @if (child.children && visible(child)) {
-  <nas-navbar-collapsible class="nav-item" [item]="child" [navigation]="navigation"
+  <nas-navbar-collapsible class="nav-item" [item]="child" [navigation]="navigation" [roles]="roles"
     [ngClass]="{ 'state-active': item.expanded }" />
   }
   @if (!child.children && visible(child)) {
-  <nas-navbar-item class="nav-item" [item]="child" />
+  <nas-navbar-item class="nav-item" [item]="child" [roles]="roles" />
   }
   }
 </div>
+}
