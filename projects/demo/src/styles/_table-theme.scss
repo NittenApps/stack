@@ -1,11 +1,39 @@
 @use '@angular/material' as mat;
 
 @mixin color($theme) {
-  .mat-mdc-table.selectable {
+  $type: mat.get-theme-type($theme);
+  $is-dark-theme: $type == dark;
+
+  .mat-mdc-table {
+    &.selectable {
+      tbody {
+        tr:hover:not(.selected):not(.mat-mdc-no-data-row) {
+          background-color: if(
+            $is-dark-theme,
+            mat.get-theme-color($theme, tertiary, 20),
+            mat.get-theme-color($theme, tertiary, 95)
+          );
+          cursor: pointer;
+        }
+      }
+    }
+
     tbody {
-      tr:hover:not(.selected):not(.mat-mdc-no-data-row) {
-        background-color: mat.get-theme-color($theme, tertiary, 95);
-        cursor: pointer;
+      td.number {
+        font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
+        text-align: right;
+      }
+    }
+
+    thead {
+      th.number {
+        &:not(.mat-sort-header) {
+          text-align: right;
+        }
+
+        .mat-sort-header-container {
+          justify-content: right;
+        }
       }
     }
   }

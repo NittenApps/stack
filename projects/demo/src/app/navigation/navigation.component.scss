@@ -16,3 +16,9 @@
 .mat-drawer-inner-container {
   display: flex;
 }
+
+.mat-mdc-menu-item .mat-mdc-menu-item-text {
+  .ng-fa-icon {
+    margin-right: 8px;
+  }
+}

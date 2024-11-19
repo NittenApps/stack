@@ -1,0 +1,48 @@
+<!-- fix https://github.com/angular/material2/pull/7083 by setting width to 100% -->
+<mat-form-field [hideRequiredMarker]="true" [floatLabel]="props['floatLabel'] || 'auto'"
+  [appearance]="props.appearance || 'fill'" [subscriptSizing]="props['subscriptSizing'] || 'fixed'"
+  [color]="props['color'] ?? 'primary'">
+  <ng-container #fieldComponent></ng-container>
+  <mat-label *ngIf="props.label && props['hideLabel'] !== true">
+    {{ props.label }}
+    <span *ngIf="props.required && props['hideRequiredMarker'] !== true" aria-hidden="true"
+      class="mat-form-field-required-marker mat-mdc-form-field-required-marker">*</span>
+  </mat-label>
+
+  <ng-container matTextPrefix *ngIf="props['textPrefix']">
+    <ng-container [ngTemplateOutlet]="props['textPrefix']" [ngTemplateOutletContext]="{ field: field }"></ng-container>
+  </ng-container>
+
+  <ng-container matPrefix *ngIf="props['prefix']">
+    <ng-container [ngTemplateOutlet]="props['prefix']" [ngTemplateOutletContext]="{ field: field }"></ng-container>
+  </ng-container>
+
+  <ng-container matTextSuffix *ngIf="props['textSuffix']">
+    <ng-container [ngTemplateOutlet]="props['textSuffix']" [ngTemplateOutletContext]="{ field: field }"></ng-container>
+  </ng-container>
+
+  <ng-container matSuffix *ngIf="props['suffix']">
+    <ng-container [ngTemplateOutlet]="props['suffix']" [ngTemplateOutletContext]="{ field: field }"></ng-container>
+  </ng-container>
+
+  <mat-error>
+    <nas-validation-message [field]="field"></nas-validation-message>
+  </mat-error>
+
+  <mat-hint *ngIf="props.description || props['hintStart'] as hint">
+    <ng-container [ngTemplateOutlet]="stringOrTemplate" [ngTemplateOutletContext]="{ content: hint }">
+    </ng-container>
+  </mat-hint>
+
+  <mat-hint *ngIf="props['hintEnd'] as hintEnd" align="end">
+    <ng-container [ngTemplateOutlet]="stringOrTemplate" [ngTemplateOutletContext]="{ content: hintEnd }">
+    </ng-container>
+  </mat-hint>
+</mat-form-field>
+
+<ng-template #stringOrTemplate let-content="content">
+  <ng-container *ngIf="!content.createEmbeddedView; else template">{{ content }}</ng-container>
+  <ng-template #template>
+    <ng-container [ngTemplateOutlet]="content" [ngTemplateOutletContext]="{ field: field }"></ng-container>
+  </ng-template>
+</ng-template>

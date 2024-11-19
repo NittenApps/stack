@@ -1,4 +1,50 @@
-/*.mat-toolbar-single-row {
-  height: 64px;
-  line-height: 64px;
-}*/
+.mat-toolbar {
+  &.mat-tertiary[color='tertiary'] {
+    position: relative;
+    z-index: 10;
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .toolbar-composite-button {
+    background: none;
+    border: none;
+    border-spacing: 2px;
+    box-shadow: none;
+    cursor: pointer;
+    display: table-row;
+    filter: none;
+    height: auto;
+    line-height: inherit;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+    text-align: left;
+    text-decoration: none;
+    user-select: none;
+
+    * {
+      display: table-cell;
+      vertical-align: middle;
+    }
+
+    .icon {
+      margin-left: 4px;
+    }
+
+    .toolbar-avatar {
+      position: relative;
+
+      img {
+        border-radius: 50%;
+        height: 40px;
+        line-height: 40px;
+        margin: 0 8px 0 0;
+        min-width: 40px;
+        width: 40px;
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+@if (type === 'number') {
+<input matInput [id]="id" [name]="field.name || ''" type="number" autocomplete="off" [readonly]="props.readonly"
+  [required]="required" [errorStateMatcher]="errorStateMatcher" [formControl]="formControl" [nasFormsAttributes]="field"
+  [tabIndex]="props.tabindex" [placeholder]="props.placeholder || ''" [numberFormat]="format"
+  [allowNegative]="allowNegative">
+} @else if (type === 'date') {
+<input matInput [id]="id" [name]="field.name || ''" type="text" autocomplete="off" [readonly]="props.readonly"
+  [required]="required" [errorStateMatcher]="errorStateMatcher" [formControl]="formControl" [nasFormsAttributes]="field"
+  [tabIndex]="props.tabindex" [placeholder]="props.placeholder || ''" [displayWith]="formatDatetime">
+} @else if (type === 'catalog') {
+<input matInput [id]="id" [name]="field.name || ''" [type]="type || 'text'" autocomplete="off"
+  [readonly]="props.readonly" [required]="required" [errorStateMatcher]="errorStateMatcher" [formControl]="formControl"
+  [nasFormsAttributes]="field" [tabIndex]="props.tabindex" [placeholder]="props.placeholder || ''"
+  [displayWith]="formatCatalog">
+} @else {
+<input matInput [id]="id" [name]="field.name || ''" [type]="type || 'text'" autocomplete="off"
+  [readonly]="props.readonly" [required]="required" [errorStateMatcher]="errorStateMatcher" [formControl]="formControl"
+  [nasFormsAttributes]="field" [tabIndex]="props.tabindex" [placeholder]="props.placeholder || ''" normalizeValue
+  [lowercase]="format === 'lowercase'" [uppercase]="format === 'uppercase'">
+}

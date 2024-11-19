@@ -38,7 +38,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumError": "1.5MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -96,23 +96,23 @@
         }
       }
     },
-    "@na-stack/activity": {
+    "@nittenapps/activity": {
       "projectType": "library",
-      "root": "projects/na-stack/activity",
-      "sourceRoot": "projects/na-stack/activity/src",
-      "prefix": "lib",
+      "root": "projects/nittenapps/activity",
+      "sourceRoot": "projects/nittenapps/activity/src",
+      "prefix": "nas",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/na-stack/activity/ng-package.json"
+            "project": "projects/nittenapps/activity/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/na-stack/activity/tsconfig.lib.prod.json"
+              "tsConfig": "projects/nittenapps/activity/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/na-stack/activity/tsconfig.lib.json"
+              "tsConfig": "projects/nittenapps/activity/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -120,29 +120,29 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "projects/na-stack/activity/tsconfig.spec.json",
+            "tsConfig": "projects/nittenapps/activity/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
     },
-    "@na-stack/api": {
+    "@nittenapps/api": {
       "projectType": "library",
-      "root": "projects/na-stack/api",
-      "sourceRoot": "projects/na-stack/api/src",
-      "prefix": "lib",
+      "root": "projects/nittenapps/api",
+      "sourceRoot": "projects/nittenapps/api/src",
+      "prefix": "nas",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/na-stack/api/ng-package.json"
+            "project": "projects/nittenapps/api/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/na-stack/api/tsconfig.lib.prod.json"
+              "tsConfig": "projects/nittenapps/api/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/na-stack/api/tsconfig.lib.json"
+              "tsConfig": "projects/nittenapps/api/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -150,29 +150,29 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "projects/na-stack/api/tsconfig.spec.json",
+            "tsConfig": "projects/nittenapps/api/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
     },
-    "@na-stack/auth": {
+    "@nittenapps/auth": {
       "projectType": "library",
-      "root": "projects/na-stack/auth",
-      "sourceRoot": "projects/na-stack/auth/src",
-      "prefix": "lib",
+      "root": "projects/nittenapps/auth",
+      "sourceRoot": "projects/nittenapps/auth/src",
+      "prefix": "nas",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/na-stack/auth/ng-package.json"
+            "project": "projects/nittenapps/auth/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/na-stack/auth/tsconfig.lib.prod.json"
+              "tsConfig": "projects/nittenapps/auth/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/na-stack/auth/tsconfig.lib.json"
+              "tsConfig": "projects/nittenapps/auth/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -180,29 +180,29 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "projects/na-stack/auth/tsconfig.spec.json",
+            "tsConfig": "projects/nittenapps/auth/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
     },
-    "@na-stack/common": {
+    "@nittenapps/common": {
       "projectType": "library",
-      "root": "projects/na-stack/common",
-      "sourceRoot": "projects/na-stack/common/src",
-      "prefix": "lib",
+      "root": "projects/nittenapps/common",
+      "sourceRoot": "projects/nittenapps/common/src",
+      "prefix": "nas",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/na-stack/common/ng-package.json"
+            "project": "projects/nittenapps/common/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/na-stack/common/tsconfig.lib.prod.json"
+              "tsConfig": "projects/nittenapps/common/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/na-stack/common/tsconfig.lib.json"
+              "tsConfig": "projects/nittenapps/common/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -210,29 +210,29 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "projects/na-stack/common/tsconfig.spec.json",
+            "tsConfig": "projects/nittenapps/common/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
     },
-    "@na-stack/components": {
+    "@nittenapps/components": {
       "projectType": "library",
-      "root": "projects/na-stack/components",
-      "sourceRoot": "projects/na-stack/components/src",
-      "prefix": "lib",
+      "root": "projects/nittenapps/components",
+      "sourceRoot": "projects/nittenapps/components/src",
+      "prefix": "nas",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/na-stack/components/ng-package.json"
+            "project": "projects/nittenapps/components/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/na-stack/components/tsconfig.lib.prod.json"
+              "tsConfig": "projects/nittenapps/components/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/na-stack/components/tsconfig.lib.json"
+              "tsConfig": "projects/nittenapps/components/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -240,8 +240,101 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "projects/na-stack/components/tsconfig.spec.json",
+            "tsConfig": "projects/nittenapps/components/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        }
+      }
+    },
+    "@nittenapps/config": {
+      "projectType": "library",
+      "root": "projects/nittenapps/config",
+      "sourceRoot": "projects/nittenapps/config/src",
+      "prefix": "nas",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/nittenapps/config/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/nittenapps/config/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/nittenapps/config/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/nittenapps/config/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        }
+      }
+    },
+    "@nittenapps/forms": {
+      "projectType": "library",
+      "root": "projects/nittenapps/forms",
+      "sourceRoot": "projects/nittenapps/forms/src",
+      "prefix": "nas",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/nittenapps/forms/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/nittenapps/forms/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/nittenapps/forms/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:jest",
+          "options": {
+            "tsConfig": "projects/nittenapps/forms/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        }
+      }
+    },
+    "@nittenapps/material": {
+      "projectType": "library",
+      "root": "projects/nittenapps/material",
+      "sourceRoot": "projects/nittenapps/material/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/nittenapps/material/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/nittenapps/material/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/nittenapps/material/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/nittenapps/material/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
           }
         }
       }

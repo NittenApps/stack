@@ -16,17 +16,12 @@
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
 html {
-  //@include mat.all-component-themes(theme.$light-theme);
   @include mat.all-component-themes(theme.$light-theme);
   @include demo.theme(theme.$light-theme);
 
   @include mat.typography-hierarchy(theme.$light-theme);
 
-  //@include layout-component.theme(theme.$light-theme);
-
   //@include mat.color-variants-backwards-compatibility(theme.$light-theme);
-
-  //@include app-theme(theme.$light-theme);
 
   @media (prefers-color-scheme: dark) {
     @include mat.all-component-colors(theme.$dark-theme);
@@ -34,12 +29,7 @@ html {
 
     @include mat.typography-hierarchy(theme.$dark-theme);
 
-    // Components themes
-    //@include layout-component.theme(theme.$dark-theme);
-
     //@include mat.color-variants-backwards-compatibility(theme.$dark-theme);
-
-    //@include app-theme(theme.$dark-theme);
   }
 }
 

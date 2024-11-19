@@ -1,0 +1,32 @@
+@if (!props.readonly) {
+<ng-template #selectAll let-selectOptions="selectOptions">
+  <mat-option (click)="toggleSelectAll(selectOptions)">
+    <mat-pseudo-checkbox class="mat-option-pseudo-checkbox" [state]="getSelectAllState(selectOptions)">
+    </mat-pseudo-checkbox>
+    {{ props.selectAllOption }}
+  </mat-option>
+</ng-template>
+
+<mat-select [id]="id" [formControl]="formControl" [nasFormsAttributes]="field" [placeholder]="props.placeholder || ''"
+  [tabIndex]="props.tabindex" [required]="required" [compareWith]="props.compareWith!" [multiple]="props.multiple"
+  (selectionChange)="change($event)" [errorStateMatcher]="errorStateMatcher" [aria-label]="_getAriaLabel()"
+  [aria-labelledby]="_getAriaLabelledby()" [disableOptionCentering]="props.disableOptionCentering"
+  [typeaheadDebounceInterval]="props.typeaheadDebounceInterval" [panelClass]="props.panelClass || ''">
+  <ng-container *ngIf="props.options | stackSelectOptions : field | async as selectOptions">
+    <ng-container *ngIf="props.multiple && props.selectAllOption" [ngTemplateOutlet]="selectAll"
+      [ngTemplateOutletContext]="{ selectOptions: selectOptions }">
+    </ng-container>
+    <ng-container *ngFor="let item of selectOptions">
+      <mat-optgroup *ngIf="item.group" [label]="item.label || ''">
+        <mat-option *ngFor="let child of item.group" [value]="child.value" [disabled]="child.disabled">
+          {{ child.label }}
+        </mat-option>
+      </mat-optgroup>
+      <mat-option *ngIf="!item.group" [value]="item.value" [disabled]="item.disabled">{{ item.label }}</mat-option>
+    </ng-container>
+  </ng-container>
+</mat-select>
+} @else {
+<input matInput [id]="id" [name]="field.name || ''" [formControl]="formControl" [nasFormsAttributes]="field"
+  [required]="required" [readonly]="true" [displayWith]="formatCatalog">
+}

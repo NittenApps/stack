@@ -1,0 +1,17 @@
+<input matInput [id]="id" [name]="field.name!" autocomplete="off" [errorStateMatcher]="errorStateMatcher"
+  [formControl]="formControl" [matDatepicker]="picker" [matDatepickerFilter]="props.datepickerOptions!.filter!"
+  [max]="props.datepickerOptions!.max" [min]="props.datepickerOptions!.min" [nasFormsAttributes]="field"
+  [placeholder]="props.placeholder || ''" [tabindex]="props.tabindex" [readonly]="props.readonly" [required]="required"
+  (dateInput)="props.datepickerOptions!.dateInput!(field, $event)"
+  (dateChange)="props.datepickerOptions!.dateChange!(field, $event)" />
+<ng-template #datepickerToggle>
+  <mat-datepicker-toggle (click)="detectChanges()" [disabled]="props.disabled" [for]="picker" />
+</ng-template>
+<mat-datepicker #picker [color]="props.color" [dateClass]="props.datepickerOptions!.dateClass!"
+  [disabled]="props.datepickerOptions!.disabled" [opened]="props.datepickerOptions!.opened"
+  [panelClass]="props.datepickerOptions!.panelClass || ''" [startAt]="props.datepickerOptions!.startAt"
+  [startView]="props.datepickerOptions!.startView!" [touchUi]="props.datepickerOptions!.touchUi"
+  [calendarHeaderComponent]="props.datepickerOptions!.calendarHeaderComponent!"
+  (monthSelected)="props.datepickerOptions!.monthSelected!(field, $event, picker)"
+  (yearSelected)="props.datepickerOptions!.yearSelected!(field, $event, picker)"
+  (opened)="props.datepickerOptions!.opened = true" (closed)="props.datepickerOptions!.opened = false" />

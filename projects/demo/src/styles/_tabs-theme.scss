@@ -1,0 +1,16 @@
+@use '@angular/material' as mat;
+
+@mixin color($theme) {
+  .mdc-tab,
+  .mat-mdc-tab {
+    &.nas-tab-invalid .mdc-tab__text-label {
+      color: mat.get-theme-color($theme, error);
+    }
+  }
+}
+
+@mixin theme($theme) {
+  @if mat.theme-has($theme, color) {
+    @include color($theme);
+  }
+}

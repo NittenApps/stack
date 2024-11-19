@@ -1,0 +1,19 @@
+<div class="navbar-header">
+  <div class="logo">
+    <span class="logo-icon"></span>
+    <span class="logo-text">{{ logoText }}</span>
+  </div>
+  @if (!(isHandset$ | async)) {
+  <button mat-icon-button tabindex="-1" (click)="onToggleFold()">
+    <mat-icon aria-label="Alternar menú">menu</mat-icon>
+  </button>
+  }
+</div>
+<div class="navbar-content" style="position: relative;">
+  <nas-navbar-navigation layout="vertical" [items]="items"></nas-navbar-navigation>
+</div>
+<div class="navbar-footer">
+  <div class="footer">
+    <span class="footer-text">{{ footerText }}</span>
+  </div>
+</div>

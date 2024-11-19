@@ -1,0 +1,21 @@
+@if (isAllowed(item)) {
+  @if (item.routerLink) {
+  <a class="nav-link" matRipple [attr.target]="item.target" [queryParams]="item.queryParams"
+    [routerLink]="item.routerLink" [routerLinkActive]="['state-link-active']"
+    [routerLinkActiveOptions]="item.routerLinkActiveOptions || { exact: false }">
+    <span class="nav-link-title">{{ item.label }}</span>
+    @if (item.icon) {
+    <nas-icon [type]="(item.icon | typeof) === 'string' ? 'mat' : item.iconSet === 'duo' ? 'fad' : 'fa'"
+      [icon]="item.icon" [swapOpacity]="item.swapOpacity || false" />
+    }
+  </a>
+  } @else {
+  <a class="nav-link" matRipple [attr.target]="item.target" [href]="item.url || '#'">
+    <span class="nav-link-title">{{ item.label }}</span>
+    @if (item.icon) {
+    <nas-icon [type]="(item.icon | typeof) === 'string' ? 'mat' : item.iconSet === 'duo' ? 'fad' : 'fa'"
+      [icon]="item.icon" [swapOpacity]="item.swapOpacity || false" />
+    }
+  </a>
+  }
+}

@@ -1,5 +1,6 @@
 import { Data, Routes } from '@angular/router';
 import { demoResolver } from './resolvers/demo.resolver';
+import { dirtyGuard } from '@nittenapps/common';
 
 export const routes: Routes = [
   {
@@ -10,10 +11,13 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
+    data: {
+      breadcrumb: 'Tablero',
+    },
   },
   {
     path: 'list',
-    loadComponent: () => import('@na-stack/activity').then((m) => m.ActivityComponent),
+    loadComponent: () => import('@nittenapps/activity').then((m) => m.ActivityComponent),
     data: {
       breadcrumb: 'Lista',
     },
@@ -25,6 +29,7 @@ export const routes: Routes = [
       {
         path: ':id',
         loadComponent: () => import('./detail/detail.component').then((m) => m.DetailComponent),
+        canDeactivate: [dirtyGuard],
         resolve: { object: demoResolver },
         data: {
           breadcrumb: {

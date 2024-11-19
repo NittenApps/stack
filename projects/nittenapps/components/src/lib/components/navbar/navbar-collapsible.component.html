@@ -1,0 +1,33 @@
+@if (isAllowed(item)) {
+@if (item.routerLink) {
+<a class="nav-link" matRipple [attr.target]="item.target" [ngClass]="{ open: item.expanded }"
+  [queryParams]="item.queryParams" [routerLink]="item.routerLink" [routerLinkActive]="['state-active']"
+  [routerLinkActiveOptions]="item.routerLinkActiveOptions || { exact: false }" (click)="handleClick($event, item)">
+  <span class="nav-link-title">{{ item.label }}</span>
+  @if (item.icon) {
+  <nas-icon [type]="(item.icon | typeof) === 'string' ? 'mat' : item.iconSet === 'duo' ? 'fad' : 'fa'"
+    [icon]="item.icon" [swapOpacity]="item.swapOpacity || false" />
+  }
+</a>
+} @else {
+<a class="nav-link" [attr.target]="item.target" [href]="item.url || '#'" matRipple [ngClass]="{ open: item.expanded }"
+  (click)="handleClick($event, item)">
+  <span class="nav-link-title">{{ item.label }}</span>
+  @if (item.icon) {
+  <nas-icon [type]="(item.icon | typeof) === 'string' ? 'mat' : item.iconSet === 'duo' ? 'fad' : 'fa'"
+    [icon]="item.icon" [swapOpacity]="item.swapOpacity || false" />
+  }
+</a>
+}
+<div class="children" [@children]="item.expanded ? 'visible' : 'hidden'">
+  @for (child of item.children; track child) {
+  @if (child.children && visible(child)) {
+  <nas-navbar-collapsible class="nav-item" [item]="child" [navigation]="navigation" [roles]="roles"
+    [ngClass]="{ 'state-active': item.expanded }" />
+  }
+  @if (!child.children && visible(child)) {
+  <nas-navbar-item class="nav-item" [item]="child" [roles]="roles" />
+  }
+  }
+</div>
+}
