@@ -1,0 +1,45 @@
+<div class="activity-detail">
+  <nas-detail-toolbar [canSave]="form.valid && form.dirty" (save)="save()" />
+  <div class="main-container">
+    <form [formGroup]="form" novalidate>
+      <div class="row row-cols-1 row-cols-md-3">
+        <mat-form-field>
+          <mat-label>Código</mat-label>
+          <input matInput autocomplete="off" formControlName="code" [readonly]="model.id" normalizeValue uppercase>
+          @if (form.get('code')?.errors?.['required']) {
+          <mat-error>Dato obligatorio</mat-error>
+          } @else if (form.get('code')?.errors) {
+          <mat-error>Dato inválido</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Nombre</mat-label>
+          <input matInput autocomplete="off" formControlName="name" normalizeValue>
+          @if (form.get('name')?.errors?.['required']) {
+          <mat-error>Dato obligatorio</mat-error>
+          } @else if (form.get('name')?.errors) {
+          <mat-error>Dato inválido</mat-error>
+          }
+        </mat-form-field>
+        <mat-slide-toggle formControlName="active">Activo</mat-slide-toggle>
+        <mat-form-field>
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="AN">Alfanumérico</mat-option>
+            <mat-option value="NM">Numérico</mat-option>
+            <mat-option value="DO">Fecha</mat-option>
+            <mat-option value="DT">Fecha y hora</mat-option>
+            <mat-option value="TX">Texto</mat-option>
+          </mat-select>
+          @if (form.get('type')?.errors?.['required']) {
+          <mat-error>Dato obligatorio</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Descripción</mat-label>
+          <textarea matInput autocomplete="off" formControlName="description" normalizeValue></textarea>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+</div>

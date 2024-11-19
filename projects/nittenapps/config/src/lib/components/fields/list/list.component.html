@@ -1,0 +1,12 @@
+<div class="activity-list">
+  <nas-list-toolbar>
+    <ng-template #rightActions>
+      <button mat-icon-button matTooltip="Ayuda" aria-label="Ayuda">
+        <fa-duotone-icon [icon]="faQuestion" />
+      </button>
+    </ng-template>
+  </nas-list-toolbar>
+  <div class="list-container">
+    <nas-list activity="configFields" [columns]="columns" />
+  </div>
+</div>
