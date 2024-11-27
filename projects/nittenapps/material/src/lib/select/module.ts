@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { StackFieldSelect } from './select.type';
+import { StackFieldMatSelect } from './select.type';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatSelectModule } from '@angular/material/select';
@@ -11,7 +11,7 @@ import { StackMatFormFieldModule } from '../form-field';
 import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
-  declarations: [StackFieldSelect],
+  declarations: [StackFieldMatSelect],
   imports: [
     CommonModule,
     MatInputModule,
@@ -23,7 +23,7 @@ import { MatInputModule } from '@angular/material/input';
     StackMatFormFieldModule,
     StackFormsModule.forChild({
       types: [
-        { name: 'select', component: StackFieldSelect, wrappers: ['form-field'] },
+        { name: 'select', component: StackFieldMatSelect, wrappers: ['form-field'] },
         { name: 'enum', extends: 'select' },
       ],
     }),

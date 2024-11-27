@@ -34,9 +34,9 @@ export class StackFieldInput extends FieldType<FieldTypeConfig<StackFieldProps>>
       case 'number':
         switch (this.props.format) {
           case 'decimal':
-            return '#,##0.00';
+            return 'separator.2';
           default:
-            return this.props.format || '#,##0';
+            return this.props.format || 'separator.0';
         }
       case 'date':
         switch (this.props.format) {
@@ -57,6 +57,7 @@ export class StackFieldInput extends FieldType<FieldTypeConfig<StackFieldProps>>
     @Inject(DATE_PIPE_DEFAULT_OPTIONS) @Optional() private datePipeOptions?: DatePipeConfig | null
   ) {
     super();
+
     StackFieldInput._SELF = this;
   }
 

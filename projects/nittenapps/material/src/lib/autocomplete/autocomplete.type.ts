@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, Type } from '@angular/core';
+import { Component, OnInit, Type } from '@angular/core';
 import { FieldTypeConfig, StackFieldConfig } from '@nittenapps/forms';
 import { StackFieldSelectProps } from '@nittenapps/forms/select';
 import { FieldType, StackFieldProps } from '../form-field';
@@ -34,7 +34,6 @@ export class StackFieldAutocomplete extends FieldType<FieldTypeConfig<Autocomple
   };
 
   ngOnInit(): void {
-    console.log('ngOnInit', this.formControl);
     this.filteredOptions = this.formControl.valueChanges.pipe(
       startWith(''),
       tap(console.log),

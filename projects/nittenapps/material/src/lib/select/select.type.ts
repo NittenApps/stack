@@ -15,7 +15,7 @@ interface SelectProps extends StackFieldProps, StackFieldSelectProps {
 }
 
 export interface StackSelectFieldConfig extends StackFieldConfig<SelectProps> {
-  type: 'select' | Type<StackFieldSelect>;
+  type: 'select' | Type<StackFieldMatSelect>;
 }
 
 @Component({
@@ -23,7 +23,7 @@ export interface StackSelectFieldConfig extends StackFieldConfig<SelectProps> {
   templateUrl: './select.type.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StackFieldSelect extends FieldType<FieldTypeConfig<SelectProps>> {
+export class StackFieldMatSelect extends FieldType<FieldTypeConfig<SelectProps>> {
   @ViewChild(MatSelect, { static: true }) set select(select: any) {
     if (!select) {
       return;
