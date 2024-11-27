@@ -1,8 +1,9 @@
-import { Location, NgTemplateOutlet } from '@angular/common';
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, ContentChild, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FaDuotoneIconComponent, FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faFloppyDisk } from '@fortawesome/pro-duotone-svg-icons';
 import { faArrowLeft } from '@fortawesome/pro-solid-svg-icons';
@@ -33,7 +34,11 @@ export class DetailToolbarComponent {
 
   @Output() save = new EventEmitter<void>();
 
-  constructor(public location: Location) {}
+  constructor(private route: ActivatedRoute, private router: Router) {}
+
+  _back(): void {
+    this.router.navigate(['..'], { relativeTo: this.route });
+  }
 
   _save(): void {
     this.save.emit();

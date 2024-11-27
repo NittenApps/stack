@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActivityService, NAS_API_CONFIG } from '@nittenapps/api';
+import { ActivityService, ApiConfig, NAS_API_CONFIG } from '@nittenapps/api';
 import { DirtyAware } from '@nittenapps/common';
 import { StackFieldConfig, StackFormOptions } from '@nittenapps/forms';
 
@@ -15,29 +15,40 @@ export abstract class BaseDetailComponent<T = any> implements DirtyAware, OnInit
   model: T;
   options: StackFormOptions;
 
-  private activityService!: ActivityService<T>;
+  protected activityService!: ActivityService<T>;
+  protected apiConfig: ApiConfig;
+  protected http: HttpClient;
+  protected route: ActivatedRoute;
+  protected router: Router;
+  protected saved = false;
 
   setModel(model: T): void {
     this.model = model;
   }
 
-  constructor(private route: ActivatedRoute, private router: Router) {
+  constructor() {
+    this.apiConfig = inject(NAS_API_CONFIG);
+    this.http = inject(HttpClient);
+    this.route = inject(ActivatedRoute);
+    this.router = inject(Router);
+
     this.model = this.initModel();
     this.fields = this.initFields();
     this.options = this.initFormOptions();
 
-    this.activityService = new ActivityService(inject(NAS_API_CONFIG), inject(HttpClient), this.getActivity());
+    this.activityService = new ActivityService(this.apiConfig, this.http, this.getActivity());
   }
 
   ngOnInit(): void {}
 
   isDirty(): boolean {
-    return this.form.dirty;
+    return !this.saved && this.form.dirty;
   }
 
   save(): void {
     this.activityService.save(this.prepareValue()).subscribe((response) => {
       if (response.success) {
+        this.saved = true;
         this.router.navigate(['..'], { relativeTo: this.route });
       }
     });
@@ -48,7 +59,7 @@ export abstract class BaseDetailComponent<T = any> implements DirtyAware, OnInit
   protected abstract initFields(): StackFieldConfig[];
 
   protected initFormOptions(): StackFormOptions {
-    return {};
+    return { formState: { activity: this.getActivity() } };
   }
 
   protected initModel(): T {
