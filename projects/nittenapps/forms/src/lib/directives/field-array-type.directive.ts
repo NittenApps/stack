@@ -54,14 +54,16 @@ export abstract class FieldArrayType<F extends StackFieldConfig = FieldArrayType
   }
 
   remove(i: number, { markAsDirty } = { markAsDirty: true }): void {
-    markAsDirty && this.formControl.markAsDirty();
-    this.model.splice(i, 1);
+    markAsDirty && this.formControl?.markAsDirty();
+    this.model?.splice(i, 1);
 
-    const field = this.field.fieldGroup![i];
-    this.field.fieldGroup?.splice(i, 1);
-    this.field.fieldGroup?.forEach((f, key) => this.updateArrayElementKey(f, `${key}`));
-    unregisterControl(field, true);
-    this._build();
+    if (this.field) {
+      const field = this.field.fieldGroup![i];
+      this.field.fieldGroup?.splice(i, 1);
+      this.field.fieldGroup?.forEach((f, key) => this.updateArrayElementKey(f, `${key}`));
+      unregisterControl(field, true);
+      this._build();
+    }
   }
 
   private _build(): void {
