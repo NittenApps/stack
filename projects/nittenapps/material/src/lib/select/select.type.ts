@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, Type, ViewChild } from '@angular/core';
+import { MatPseudoCheckboxState } from '@angular/material/core';
 import { MatSelect, MatSelectChange } from '@angular/material/select';
 import { FieldTypeConfig, StackFieldConfig, StackFieldProps, ɵobserve as observe } from '@nittenapps/forms';
 import { StackFieldSelectProps } from '@nittenapps/forms/select';
 import { FieldType } from '../form-field';
-import { MatPseudoCheckboxState } from '@angular/material/core';
 
 interface SelectProps extends StackFieldProps, StackFieldSelectProps {
   multiple?: boolean;
@@ -38,7 +38,7 @@ export class StackFieldMatSelect extends FieldType<FieldTypeConfig<SelectProps>>
   override defaultOptions = {
     props: {
       compareWith(value1: any, value2: any) {
-        return value1?.code ? value1.code === value2?.code : value1 === value2;
+        return value1?.code ? value1.code === value2?.code || value1.code === value2?.codeValue : value1 === value2;
       },
     },
   };

@@ -1,6 +1,6 @@
 import { Component, OnInit, Type, ViewChild } from '@angular/core';
 import { MatTable, MatTableDataSource } from '@angular/material/table';
-import { faPlus, faTrashCan } from '@fortawesome/pro-solid-svg-icons';
+import { faBan, faPencil, faPlus, faTrashCan } from '@fortawesome/pro-solid-svg-icons';
 import { FieldArrayType, FieldType, StackFieldConfig, ɵgetFieldValue as getFieldValue } from '@nittenapps/forms';
 import { Observable } from 'rxjs';
 import { StackFieldProps } from '../form-field';
@@ -14,8 +14,12 @@ interface FieldsToRender {
 
 interface TableProps extends StackFieldProps {
   addable?: boolean;
+  cancelable?: boolean;
+  editable?: boolean;
   removable?: boolean;
   add?: () => Observable<any>;
+  cancel?: (field: StackFieldConfig, value: any) => Observable<any>;
+  edit?: (field: StackFieldConfig, value: any) => Observable<any>;
 }
 
 export interface TableConfig extends StackFieldConfig<TableProps> {
@@ -36,11 +40,39 @@ export class StackMatTable extends FieldArrayType<TableConfig> implements OnInit
   headerFields: string[] = [];
 
   get displayedColumns(): string[] {
-    return this.fieldsToRender.filter((f) => f.key !== '_delete' || this.props.removable).map((f) => f.key);
+    return this.fieldsToRender
+      .filter(
+        (f) =>
+          !['_edit', '_cancel', '_delete'].includes(f.key) ||
+          (f.key === '_edit' && this.props.editable) ||
+          (f.key === '_cancel' && this.props.cancelable) ||
+          (f.key === '_delete' && this.props.removable)
+      )
+      .map((f) => f.key);
   }
 
   override onPopulate(field: TableConfig): void {
-    if ((field.fieldArray as StackFieldConfig)?.fieldGroup?.[0]?.key !== '_delete') {
+    if ((field.fieldArray as StackFieldConfig)?.fieldGroup?.findIndex((f) => f.key === '_edit') === -1) {
+      (field.fieldArray as StackFieldConfig)?.fieldGroup?.splice(0, 0, {
+        key: '_edit',
+        type: 'button',
+        props: {
+          icon: faPencil,
+          onClick: this.editItem,
+        },
+      });
+    }
+    if ((field.fieldArray as StackFieldConfig)?.fieldGroup?.findIndex((f) => f.key === '_cancel') === -1) {
+      (field.fieldArray as StackFieldConfig)?.fieldGroup?.splice(0, 0, {
+        key: '_cancel',
+        type: 'button',
+        props: {
+          icon: faBan,
+          onClick: this.cancelItem,
+        },
+      });
+    }
+    if ((field.fieldArray as StackFieldConfig)?.fieldGroup?.findIndex((f) => f.key === '_delete') === -1) {
       (field.fieldArray as StackFieldConfig)?.fieldGroup?.splice(0, 0, {
         key: '_delete',
         type: 'button',
@@ -56,6 +88,7 @@ export class StackMatTable extends FieldArrayType<TableConfig> implements OnInit
 
   ngOnInit(): void {
     (this.field.props as any)['remove'] = this.remove.bind(this);
+    (this.field.props as any)['replace'] = this.replace.bind(this);
     this.dataSource.data = this.field.fieldGroup || [];
     this.fieldsToRender = this.buildColumnInfo(this.field.fieldArray as StackFieldConfig);
   }
@@ -99,8 +132,9 @@ export class StackMatTable extends FieldArrayType<TableConfig> implements OnInit
     this.table.renderRows();
   }
 
-  removeItem(field: StackFieldConfig): void {
-    field.parent!.parent!.props!['remove'](+field.parent!.key!);
+  override replace(i: number, newValue: any): void {
+    super.replace(i, newValue);
+    this.table.renderRows();
   }
 
   private buildColumnInfo(array: StackFieldConfig): FieldsToRender[] {
@@ -115,5 +149,26 @@ export class StackMatTable extends FieldArrayType<TableConfig> implements OnInit
     );
 
     return fieldsToRender.sort((f1, f2) => (f1.order > f2.order ? 1 : -1));
+  }
+
+  private cancelItem(field: StackFieldConfig): void {
+    field.parent!.parent!.props!['cancel']?.(field, getFieldValue(field.parent!));
+  }
+
+  private editItem(field: StackFieldConfig): void {
+    /*console.log(field.parent?.key);
+    console.log(
+      field.parent?.form?.get(field.parent!.key!.toString()),
+      field.parent?.form?.get(field.parent!.key!.toString())?.value
+    );*/
+    field.parent!.parent!.props!['edit']?.(field, getFieldValue(field.parent!))?.subscribe((value: any) => {
+      if (!!value) {
+        field.parent!.parent!.props!['replace'](+field.parent!.key!, value);
+      }
+    });
+  }
+
+  private removeItem(field: StackFieldConfig): void {
+    field.parent!.parent!.props!['remove'](+field.parent!.key!);
   }
 }

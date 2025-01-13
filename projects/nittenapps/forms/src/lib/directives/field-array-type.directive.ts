@@ -66,6 +66,14 @@ export abstract class FieldArrayType<F extends StackFieldConfig = FieldArrayType
     }
   }
 
+  replace(i: number, newValue: any, { markAsDirty } = { markAsDirty: true }): void {
+    markAsDirty && this.formControl?.markAsDirty();
+    this.model[i] = newValue;
+
+    this.markFieldForCheck(this.field.fieldGroup![i]);
+    this._build();
+  }
+
   private _build(): void {
     const fields = (this.field as StackFieldConfigCache).formControl?._fields ?? [this.field];
     fields.forEach((f) => (this.options as any).build(f));
