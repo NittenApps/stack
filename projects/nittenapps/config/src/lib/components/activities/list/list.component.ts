@@ -1,17 +1,13 @@
 import { Component } from '@angular/core';
-import { FaDuotoneIconComponent } from '@fortawesome/angular-fontawesome';
-import { faQuestion } from '@fortawesome/pro-duotone-svg-icons';
-import { Column, ListComponent as StackListComponent, ListToolbarComponent } from '@nittenapps/components';
+import { ListComponent as StackListComponent, ListToolbarComponent, Column } from '@nittenapps/components';
 
 @Component({
-  selector: 'nas-fields-list',
+  selector: 'nas-activities-list',
   standalone: true,
-  imports: [FaDuotoneIconComponent, StackListComponent, ListToolbarComponent],
+  imports: [ListToolbarComponent, StackListComponent],
   templateUrl: './list.component.html',
 })
 export class ListComponent {
-  readonly faQuestion = faQuestion;
-
   columns: Column[] = [
     {
       id: 'code',

@@ -1,6 +1,6 @@
 import { Definition } from './definition';
 
-export type Component = {
+export interface Component {
   id?: string;
   code?: string;
   name?: string;
@@ -9,4 +9,4 @@ export type Component = {
   definition?: Definition;
   active?: boolean;
   version?: number;
-};
+}

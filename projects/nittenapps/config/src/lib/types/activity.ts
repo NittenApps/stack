@@ -1,6 +1,6 @@
 import { Component } from './component';
-import { PropertyGroup } from './property-group';
+import { FieldGroup } from './field-group';
 
-export type Activity = Component & {
-  propertyGroups?: PropertyGroup[];
+export interface Activity extends Component {
+  fieldGroups?: FieldGroup[];
 }
