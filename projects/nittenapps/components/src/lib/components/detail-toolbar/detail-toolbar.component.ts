@@ -23,8 +23,8 @@ import { faArrowLeft } from '@fortawesome/pro-solid-svg-icons';
   styleUrl: './detail-toolbar.component.scss',
 })
 export class DetailToolbarComponent {
-  faArrowLeft = faArrowLeft;
-  faFloppyDisk = faFloppyDisk;
+  readonly faArrowLeft = faArrowLeft;
+  readonly faFloppyDisk = faFloppyDisk;
 
   @ContentChild('leftActions') leftActions: TemplateRef<any> | null = null;
   @ContentChild('rightActions') rightActions: TemplateRef<any> | null = null;

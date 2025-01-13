@@ -49,9 +49,13 @@ export abstract class BaseDetailComponent<T = any> implements DirtyAware, OnInit
     this.activityService.save(this.prepareValue()).subscribe((response) => {
       if (response.success) {
         this.saved = true;
-        this.router.navigate(['..'], { relativeTo: this.route });
+        this.back();
       }
     });
+  }
+
+  protected back(): void {
+    this.router.navigate(['..'], { relativeTo: this.route });
   }
 
   protected abstract getActivity(): string;

@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { GoogleMapsModule, MapGeocoder } from '@angular/google-maps';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
@@ -14,22 +14,23 @@ import PlaceResult = google.maps.places.PlaceResult;
 })
 export class SelectAddressComponent {
   address?: string;
-  center: any;
+  center: google.maps.LatLng;
   mapOptions: google.maps.MapOptions;
   markerPosition?: google.maps.LatLng;
-  markerOptions: google.maps.marker.AdvancedMarkerElementOptions = { gmpDraggable: true };
+  markerOptions: google.maps.marker.AdvancedMarkerElementOptions;
   place?: PlaceResult;
   zoom: number;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: any, private geocoder: MapGeocoder) {
-    this.mapOptions = { mapId: 'f4d18267dcc5eff7' };
-    this.center = { lat: 23.634501, lng: -102.552784 };
-    this.zoom = 5;
+    this.mapOptions = { mapId: data.mapId };
+    this.markerPosition = data.markerPosition;
+    this.center = data.markerPosition || data.center || { lat: 23.634501, lng: -102.552784 };
+    this.zoom = data.zoom || 5;
+    this.markerOptions = { gmpDraggable: !!data.editable };
   }
 
   dragEnd($event: google.maps.MapMouseEvent): void {
     this.geocoder.geocode({ location: $event.latLng }).subscribe(({ results }) => {
-      console.log(results);
       if (results.length > 0) {
         this.address = results[0].formatted_address;
         this.place = results[0];

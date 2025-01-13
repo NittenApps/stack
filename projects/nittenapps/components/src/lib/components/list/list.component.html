@@ -7,11 +7,18 @@
       {{column.title}}</th>
     <td mat-cell *matCellDef="let item"
       [ngClass]="{'date': ['date', 'datetime'].includes(column.type || ''), 'number': ['decimal', 'integer'].includes(column.type || '')}">
+      @if (column.type === 'icon') {
+        @if (getIcon(column, item)) {
+        <fa-icon [icon]="getIcon(column, item)!" />
+        }
+      } @else {
       {{column.type === 'integer' ? (getNumberValue(column, item) | number: '1.0-0')
       : column.type === 'decimal' ? (getNumberValue(column, item) | number: '1.2-2')
       : column.type === 'date' ? (getValue(column, item) | date: 'dd/MM/yyyy')
       : column.type === 'datetime' ? (getValue(column, item) | date: 'dd/MM/yyyy HH:mm')
-      : getValue(column, item)}}</td>
+      : getValue(column, item)}}
+      }
+    </td>
   </ng-container>
   }
 

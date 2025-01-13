@@ -15,7 +15,7 @@ import { faPlus } from '@fortawesome/pro-duotone-svg-icons';
   styleUrl: './list-toolbar.component.scss',
 })
 export class ListToolbarComponent {
-  faPlus = faPlus;
+  readonly faPlus = faPlus;
 
   @ContentChild('leftActions') leftActions: TemplateRef<any> | null = null;
   @ContentChild('rightActions') rightActions: TemplateRef<any> | null = null;

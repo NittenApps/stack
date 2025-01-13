@@ -19,6 +19,8 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule, SortDirection } from '@angular/material/sort';
 import { MatTable, MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { ApiConfig, NAS_API_CONFIG } from '@nittenapps/api';
 import { interval, merge, Observable, startWith, Subscription, tap } from 'rxjs';
 import { ListDataSource } from '../../datasources/list.datasource';
@@ -28,7 +30,7 @@ import { Column, Filter } from '../../types';
 @Component({
   selector: 'nas-list',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, MatPaginatorModule, MatSortModule, MatTableModule, NgClass],
+  imports: [DatePipe, DecimalPipe, FaIconComponent, MatPaginatorModule, MatSortModule, MatTableModule, NgClass],
   templateUrl: './list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -128,6 +130,13 @@ export class ListComponent<T> implements AfterViewInit, OnChanges, OnDestroy, On
       return this.rowClass(item);
     }
     return this.rowClass;
+  }
+
+  getIcon(column: Column, item: T): IconProp | undefined {
+    if (typeof column.icon === 'function') {
+      return column.icon(column.id, item);
+    }
+    return column.icon;
   }
 
   getNumberValue(column: Column, item: T): number | undefined {

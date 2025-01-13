@@ -1,5 +1,5 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { AsyncPipe, NgStyle } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, EventEmitter, HostListener, Input, OnInit, Output, ViewEncapsulation, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,7 +11,7 @@ import { NavigationComponent } from './navbar.component';
 @Component({
   selector: 'nas-navbar-vertical',
   standalone: true,
-  imports: [AsyncPipe, MatButtonModule, MatIconModule, NavigationComponent, NgStyle],
+  imports: [AsyncPipe, MatButtonModule, MatIconModule, NavigationComponent],
   templateUrl: './navbar-vertical.component.html',
   styleUrl: './navbar-vertical.component.scss',
   encapsulation: ViewEncapsulation.None,
