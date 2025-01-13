@@ -6,5 +6,6 @@ export type CatalogValue = {
   code?: string;
   name?: string;
   description?: string;
+  catalogValue?: { code?: string; name?: string };
   attributes?: { [key: string]: AttributeValue[] };
 };
